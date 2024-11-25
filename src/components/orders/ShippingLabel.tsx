@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux';
 import { addShippingLabel } from '../../store/slices/documentSlice';
 import Barcode from 'react-barcode';
 import { MOCK_SHIPMENTS } from '../../utils/mockData';
+import confetti from 'canvas-confetti';
 
 interface ShippingLabelProps {
   order: any;
