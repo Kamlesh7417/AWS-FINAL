@@ -1,4 +1,3 @@
-import React from 'react';
 import { ShoppingBagIcon, TruckIcon, CurrencyDollarIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import RevenueChart from '../components/dashboard/RevenueChart';
 import ShipmentStatusChart from '../components/dashboard/ShipmentStatusChart';
