@@ -1,8 +1,7 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
-  ShoppingBagIcon, 
+import {
+  ShoppingBagIcon,
   GlobeAsiaAustraliaIcon,
   TruckIcon,
   DocumentTextIcon,
@@ -10,7 +9,7 @@ import {
   UserGroupIcon,
   ArrowRightIcon,
   CheckCircleIcon,
-  SparklesIcon
+  SparklesIcon,
 } from '@heroicons/react/24/outline';
 
 const Landing: React.FC = () => {
@@ -224,7 +223,6 @@ const Landing: React.FC = () => {
                 Empowering global trade through technology.
               </p>
             </div>
-            {/* Add additional footer sections as needed */}
           </div>
           <div className="mt-12 border-t border-gray-200 pt-8">
             <p className="text-center text-gray-500">
