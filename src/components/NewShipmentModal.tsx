@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Sparkles } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import { useAI } from '../hooks/useAI';
 
 interface NewShipmentModalProps {
@@ -82,17 +82,11 @@ const NewShipmentModal = ({ onClose, orderId = 'ORD001' }: NewShipmentModalProps
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-gradient-to-r from-primary-50 to-saffron/10 rounded-lg p-4 flex items-start space-x-3"
+                    className="bg-gradient-to-r from-primary-50 to-saffron/10 rounded-lg p-4"
                   >
-                    <Sparkles className="h-5 w-5 text-primary-600 mt-1" />
-                    <div>
-                      <h4 className="text-sm font-medium text-primary-800">
-                        AI Suggestions Applied
-                      </h4>
-                      <p className="text-sm text-primary-600">
-                        We've pre-filled some fields based on your order details.
-                      </p>
-                    </div>
+                    <p className="text-sm text-primary-600">
+                      We've pre-filled some fields based on your order details.
+                    </p>
                   </motion.div>
                 )
               )}

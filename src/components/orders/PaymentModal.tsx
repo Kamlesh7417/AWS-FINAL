@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { XMarkIcon, CreditCardIcon } from '@heroicons/react/24/outline';
 import { useDispatch } from 'react-redux';
-import { updateOrderStatusAndGenerateLabel } from '../../store/slices/orderSlice';
+import { updateOrderStatusAndGenerateLabel } from '../../redux/slices/orderSlice'; // Updated import path
 import confetti from 'canvas-confetti';
-import { AppDispatch } from '../../store';
+import { AppDispatch } from '../../redux/store'; // Updated import path
 
 interface PaymentModalProps {
   amount: number;
@@ -207,9 +207,11 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                 <div className="flex items-center space-x-2">
                   <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
                   <span>
-                    {processingStep === 'payment' ? 'Processing Payment...' :
-                    processingStep === 'label' ? 'Generating Label...' :
-                    'Completing...'}
+                    {processingStep === 'payment'
+                      ? 'Processing Payment...'
+                      : processingStep === 'label'
+                      ? 'Generating Label...'
+                      : 'Completing...'}
                   </span>
                 </div>
               ) : (
