@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'; // Add this import
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   ShoppingBagIcon, 
@@ -7,8 +7,6 @@ import {
   DocumentTextIcon,
   ChartBarIcon,
   UserGroupIcon,
-  ArrowRightIcon,
-  CheckCircleIcon,
   SparklesIcon
 } from '@heroicons/react/24/outline';
 
@@ -76,7 +74,6 @@ const Landing: React.FC = () => {
               </span>
             </div>
             <div className="flex items-center space-x-4">
-              {/* Updated Login Link */}
               <Link to="/seller/login" className="btn btn-secondary">
                 Login
               </Link>
@@ -85,7 +82,7 @@ const Landing: React.FC = () => {
         </div>
       </nav>
 
-      {/* Rest of the component remains unchanged */}
+      {/* Additional content for the Landing page */}
     </div>
   );
 };
