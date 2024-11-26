@@ -18,10 +18,9 @@ const AIAgentChat: React.FC<AIAgentChatProps> = ({
 }) => {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<{ sender: string; content: string }[]>([]);
-  const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Scroll to the bottom of the chat whenever messages are updated
+  // Scroll to the bottom of the chat when messages update
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -30,46 +29,35 @@ const AIAgentChat: React.FC<AIAgentChatProps> = ({
     scrollToBottom();
   }, [messages]);
 
-  const handleSend = async () => {
-    if (!message.trim() || loading) return;
+  const handleSend = () => {
+    if (message.trim()) {
+      // Add user message to chat
+      const userMessage = { sender: 'You', content: message.trim() };
+      setMessages((prev) => [...prev, userMessage]);
 
-    const userMessage = message.trim();
-    setMessage('');
-    setMessages((prev) => [...prev, { sender: 'You', content: userMessage }]);
-    setLoading(true);
-
-    try {
-      onSendMessage(userMessage); // Trigger external onSendMessage logic
-    } catch (error) {
-      console.error('Error:', error);
-      setMessages((prev) => [
-        ...prev,
-        { sender: 'Error', content: 'Failed to send the message. Please try again.' },
-      ]);
-    } finally {
-      setLoading(false);
+      onSendMessage(message.trim());
+      setMessage('');
     }
   };
 
-  const renderMessage = (sender: string, content: string) => {
-    const isUser = sender === 'You';
-    return (
+  const renderMessage = (sender: string, content: string) => (
+    <div
+      className={`mb-4 ${
+        sender === 'You' ? 'text-right' : 'text-left'
+      }`}
+    >
       <div
-        className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-2`}
-        key={`${sender}-${content}-${Date.now()}`}
+        className={`inline-block rounded-lg p-3 ${
+          sender === 'You'
+            ? 'bg-primary-600 text-white'
+            : 'bg-gray-100 text-gray-900'
+        }`}
       >
-        <div
-          className={`rounded-lg p-3 max-w-[80%] ${
-            isUser
-              ? 'bg-primary-600 text-white'
-              : 'bg-gray-100 text-gray-900 border border-gray-300'
-          }`}
-        >
-          {content}
-        </div>
+        <p className="text-sm">{content}</p>
       </div>
-    );
-  };
+      <div className="text-xs text-gray-500 mt-1">{sender}</div>
+    </div>
+  );
 
   return (
     <div className="flex flex-col h-full bg-white rounded-lg shadow-sm">
@@ -109,7 +97,7 @@ const AIAgentChat: React.FC<AIAgentChatProps> = ({
       </div>
 
       <div className="flex-1 p-4 overflow-y-auto">
-        {messages.map((msg, index) => renderMessage(msg.sender, msg.content))}
+        {messages.map((msg) => renderMessage(msg.sender, msg.content))}
         <div ref={messagesEndRef} />
       </div>
 
@@ -122,20 +110,14 @@ const AIAgentChat: React.FC<AIAgentChatProps> = ({
             placeholder="Type your message..."
             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-            disabled={loading}
           />
           <motion.button
-            whileHover={{ scale: loading ? 1 : 1.05 }}
-            whileTap={{ scale: loading ? 1 : 0.95 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={handleSend}
-            className="p-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={loading}
+            className="p-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
           >
-            {loading ? (
-              <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
-            ) : (
-              <Send className="h-5 w-5" />
-            )}
+            <Send className="h-5 w-5" />
           </motion.button>
         </div>
       </div>
