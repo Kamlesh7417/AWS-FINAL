@@ -1,7 +1,13 @@
 import React from 'react';
 import { Search, Filter } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Order } from '../services/api';
+
+// Define Order type locally
+interface Order {
+  order_id: string;
+  customer: string;
+  // Add other fields if necessary
+}
 
 interface OrderFilterProps {
   onFilterChange: (orderId: string) => void;
