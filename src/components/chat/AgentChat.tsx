@@ -8,14 +8,14 @@ interface AgentChatProps {
   agent: Agent;
   messages: AgentMessage[];
   className?: string;
-  onSendMessage?: (message: string) => void; // Allowing external message handling
+  onSendMessage?: (message: string) => void; // Added this prop
 }
 
 const AgentChat: React.FC<AgentChatProps> = ({
   agent,
   messages: initialMessages,
   className = '',
-  onSendMessage,
+  onSendMessage, // Allowing external message handling
 }) => {
   const [messages, setMessages] = useState<AgentMessage[]>(initialMessages);
   const [newMessage, setNewMessage] = useState('');
@@ -34,8 +34,7 @@ const AgentChat: React.FC<AgentChatProps> = ({
   const handleSend = async (retrying: boolean = false) => {
     if ((!newMessage.trim() && !retrying) || loading) return;
 
-    const messageText = retrying ? messages[messages.length - 2]?.content : newMessage;
-
+    const messageText = retrying ? messages[messages.length - 2].content : newMessage;
     if (!retrying) {
       const userMessage: AgentMessage = {
         id: Date.now().toString(),
@@ -55,7 +54,7 @@ const AgentChat: React.FC<AgentChatProps> = ({
       if (agent.id === 'doc-agent') {
         const response = await axios.post(
           'https://bi5e25o5we.execute-api.us-east-1.amazonaws.com/dev/compliance',
-          { user_input: messageText, language: 'en' },
+          { message: messageText },
           {
             timeout: 10000,
             headers: {
@@ -265,8 +264,7 @@ const AgentChat: React.FC<AgentChatProps> = ({
 
       <div className="p-4 border-t">
         <div className="flex items-center space-x-2">
-          <button className="p-2 text-gray-600 hover:text-primary-600 rounded-full hover
-:bg-gray-100">
+          <button className="p-2 text-gray-600 hover:text-primary-600 rounded-full hover:bg-gray-100">
             <Paperclip className="h-5 w-5" />
           </button>
           <input
