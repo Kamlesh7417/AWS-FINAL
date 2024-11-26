@@ -93,13 +93,11 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
 
       // Update order status and generate label
       setProcessingStep('label');
-      const resultAction = await dispatch(updateOrderStatusAndGenerateLabel({ 
-        orderId, 
-        status: 'SHIPPED' 
-      })).unwrap();
+      const resultAction = await dispatch(updateOrderStatusAndGenerateLabel(orderId, 'SHIPPED'));
 
-      if (!resultAction.success) {
-        throw new Error(resultAction.error || 'Failed to update order status');
+      // Check if the result is successful (adjust based on your action result shape)
+      if (!resultAction.payload?.success) {
+        throw new Error(resultAction.payload?.error || 'Failed to update order status');
       }
 
       // Show success and trigger confetti
