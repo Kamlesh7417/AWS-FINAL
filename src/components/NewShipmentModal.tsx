@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin } from 'lucide-react';
 import { useAI } from '../hooks/useAI';
@@ -18,18 +18,6 @@ const NewShipmentModal = ({ onClose, orderId = 'ORD001' }: NewShipmentModalProps
   });
 
   const { suggestions, loading } = useAI(orderId);
-
-  useEffect(() => {
-    if (suggestions) {
-      setFormData({
-        origin: suggestions.origin || '',
-        destination: suggestions.destination || '',
-        weight: suggestions.weight || '',
-        dimensions: suggestions.dimensions || '',
-        quantity: '1',
-      });
-    }
-  }, [suggestions]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -66,7 +54,7 @@ const NewShipmentModal = ({ onClose, orderId = 'ORD001' }: NewShipmentModalProps
         <div className="p-6">
           <AnimatePresence mode="wait">
             <motion.div
-              key="step1"
+              key="form"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
