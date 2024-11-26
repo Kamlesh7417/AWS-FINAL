@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux';
 import { addShippingLabel } from '../../store/slices/documentSlice';
 import Barcode from 'react-barcode';
 import { MOCK_SHIPMENTS } from '../../utils/mockData';
-import confetti from 'canvas-confetti';
+import * as confetti from 'canvas-confetti'; // Correctly importing the UMD module
 
 interface ShippingLabelProps {
   order: any;
@@ -16,7 +16,7 @@ interface ShippingLabelProps {
 const carrierLogos = {
   'DHL Express': 'https://www.dhl.com/content/dam/dhl/global/core/images/logos/dhl-logo.svg',
   'FedEx': 'https://www.fedex.com/content/dam/fedex-com/logos/logo.png',
-  'UPS': 'https://www.ups.com/assets/resources/images/UPS_logo.svg'
+  'UPS': 'https://www.ups.com/assets/resources/images/UPS_logo.svg',
 };
 
 const ShippingLabel: React.FC<ShippingLabelProps> = ({ order, onClose, onGenerated }) => {
@@ -28,23 +28,25 @@ const ShippingLabel: React.FC<ShippingLabelProps> = ({ order, onClose, onGenerat
 
   const handlePrintLabel = () => {
     // Trigger confetti
-    confetti({
+    confetti.default({
       particleCount: 100,
       spread: 70,
-      origin: { y: 0.6 }
+      origin: { y: 0.6 },
     });
 
     // Create shipping label document
-    dispatch(addShippingLabel({
-      id: `DOC-${order.order_id}-LABEL`,
-      orderId: order.order_id,
-      name: 'Shipping Label',
-      type: 'Label',
-      date: new Date().toISOString(),
-      size: '125 KB',
-      status: 'Final',
-      url: `https://aws-exportedge-dev-order-processing-bucket.s3.us-east-1.amazonaws.com/orders_docs/${order.order_id}/${order.order_id}_label.pdf`
-    }));
+    dispatch(
+      addShippingLabel({
+        id: `DOC-${order.order_id}-LABEL`,
+        orderId: order.order_id,
+        name: 'Shipping Label',
+        type: 'Label',
+        date: new Date().toISOString(),
+        size: '125 KB',
+        status: 'Final',
+        url: `https://aws-exportedge-dev-order-processing-bucket.s3.us-east-1.amazonaws.com/orders_docs/${order.order_id}/${order.order_id}_label.pdf`,
+      })
+    );
 
     setShowSuccess(true);
     onGenerated();
@@ -63,15 +65,12 @@ const ShippingLabel: React.FC<ShippingLabelProps> = ({ order, onClose, onGenerat
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
         className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto m-4"
-        onClick={e => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6 border-b">
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-semibold">Shipping Label Preview</h3>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-lg"
-            >
+            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
               <XMarkIcon className="h-6 w-6 text-gray-500" />
             </button>
           </div>
@@ -83,7 +82,7 @@ const ShippingLabel: React.FC<ShippingLabelProps> = ({ order, onClose, onGenerat
             <div className="space-y-6">
               {/* Carrier Logo */}
               <div className="text-center mb-8">
-                <img 
+                <img
                   src={carrierLogos[shipment.carrier as keyof typeof carrierLogos]}
                   alt={shipment.carrier}
                   className="h-12 mx-auto"
@@ -95,12 +94,7 @@ const ShippingLabel: React.FC<ShippingLabelProps> = ({ order, onClose, onGenerat
                 <div className="text-xs text-gray-500">Tracking Number</div>
                 <div className="font-mono text-xl font-bold">{shipment.tracking_number}</div>
                 <div className="mt-2 flex justify-center">
-                  <Barcode 
-                    value={shipment.tracking_number}
-                    width={1.5}
-                    height={50}
-                    fontSize={12}
-                  />
+                  <Barcode value={shipment.tracking_number} width={1.5} height={50} fontSize={12} />
                 </div>
               </div>
 
