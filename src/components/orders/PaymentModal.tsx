@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { XMarkIcon, CreditCardIcon } from '@heroicons/react/24/outline';
 import { useDispatch } from 'react-redux';
-import { updateOrderStatusAndGenerateLabel } from '../../store/slices/orderSlice'; // Correct import path for orderSlice
+import { updateOrderStatusAndGenerateLabel } from '../../redux/slices/orderSlice'; // Corrected import path
 import confetti from 'canvas-confetti';
-import { AppDispatch } from '../../store'; // Correct import path for store
+import { AppDispatch } from '../../redux/store'; // Corrected import path
 
 interface PaymentModalProps {
   amount: number;
@@ -85,7 +85,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       setProcessingStep('label');
-      const success = await dispatch(updateOrderStatusAndGenerateLabel(orderId, 'SHIPPED'));
+      const success = await dispatch(updateOrderStatusAndGenerateLabel({ orderId, status: 'SHIPPED' }));
 
       if (!success) {
         throw new Error('Failed to update order status');
