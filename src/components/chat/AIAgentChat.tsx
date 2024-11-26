@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Phone, Video } from 'lucide-react';
 import { Agent } from '../../types/agents';
@@ -17,12 +17,58 @@ const AIAgentChat: React.FC<AIAgentChatProps> = ({
   onStartVideo
 }) => {
   const [message, setMessage] = useState('');
+  const [messages, setMessages] = useState<{ sender: string; content: string }[]>([]);
+  const [loading, setLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const handleSend = () => {
-    if (message.trim()) {
-      onSendMessage(message);
-      setMessage('');
+  // Scroll to the bottom of the chat whenever messages are updated
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const handleSend = async () => {
+    if (!message.trim() || loading) return;
+
+    const userMessage = message.trim();
+    setMessage('');
+    setMessages((prev) => [...prev, { sender: 'You', content: userMessage }]);
+    setLoading(true);
+
+    try {
+      onSendMessage(userMessage); // Trigger external onSendMessage logic
+    } catch (error) {
+      console.error('Error:', error);
+      setMessages((prev) => [
+        ...prev,
+        { sender: 'Error', content: 'Failed to send the message. Please try again.' },
+      ]);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const renderMessage = (sender: string, content: string) => {
+    const isUser = sender === 'You';
+    return (
+      <div
+        className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-2`}
+        key={`${sender}-${content}-${Date.now()}`}
+      >
+        <div
+          className={`rounded-lg p-3 max-w-[80%] ${
+            isUser
+              ? 'bg-primary-600 text-white'
+              : 'bg-gray-100 text-gray-900 border border-gray-300'
+          }`}
+        >
+          {content}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -63,7 +109,8 @@ const AIAgentChat: React.FC<AIAgentChatProps> = ({
       </div>
 
       <div className="flex-1 p-4 overflow-y-auto">
-        {/* Chat messages will be rendered here */}
+        {messages.map((msg, index) => renderMessage(msg.sender, msg.content))}
+        <div ref={messagesEndRef} />
       </div>
 
       <div className="p-4 border-t">
@@ -75,14 +122,20 @@ const AIAgentChat: React.FC<AIAgentChatProps> = ({
             placeholder="Type your message..."
             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+            disabled={loading}
           />
           <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: loading ? 1 : 1.05 }}
+            whileTap={{ scale: loading ? 1 : 0.95 }}
             onClick={handleSend}
-            className="p-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+            className="p-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={loading}
           >
-            <Send className="h-5 w-5" />
+            {loading ? (
+              <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
+            ) : (
+              <Send className="h-5 w-5" />
+            )}
           </motion.button>
         </div>
       </div>
