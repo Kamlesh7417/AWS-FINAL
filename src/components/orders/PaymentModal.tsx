@@ -4,9 +4,13 @@ import {
   XMarkIcon, 
   CreditCardIcon
 } from '@heroicons/react/24/outline';
-import { useDispatch } from 'react-redux';
-import { updateOrderStatusAndGenerateLabel } from '../../store/slices/orderSlice';
+import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '../../../store';
+import { updateOrderStatusAndGenerateLabel } from '../../../store/slices/orderSlice';
 import confetti from 'canvas-confetti';
+
+export const useAppDispatch: () => AppDispatch = useDispatch;
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 
 interface PaymentModalProps {
   amount: number;
@@ -23,7 +27,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   onClose, 
   onSuccess 
 }) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cardNumber, setCardNumber] = useState('');
@@ -88,10 +92,13 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
 
       // Update order status and generate label
       setProcessingStep('label');
-      const success = await dispatch(updateOrderStatusAndGenerateLabel(orderId, 'SHIPPED'));
+      const resultAction = await dispatch(updateOrderStatusAndGenerateLabel({ 
+        orderId, 
+        status: 'SHIPPED' 
+      })).unwrap();
 
-      if (!success) {
-        throw new Error('Failed to update order status');
+      if (!resultAction.success) {
+        throw new Error(resultAction.error || 'Failed to update order status');
       }
 
       // Show success and trigger confetti
@@ -139,6 +146,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-lg"
+            type="button"
           >
             <XMarkIcon className="h-6 w-6 text-gray-500" />
           </button>
@@ -161,10 +169,11 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="cardNumber" className="block text-sm font-medium text-gray-700 mb-1">
                 Card Number
               </label>
               <input
+                id="cardNumber"
                 type="text"
                 value={cardNumber}
                 onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
@@ -177,10 +186,11 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="expiry" className="block text-sm font-medium text-gray-700 mb-1">
                   Expiry Date
                 </label>
                 <input
+                  id="expiry"
                   type="text"
                   value={expiry}
                   onChange={(e) => setExpiry(formatExpiry(e.target.value))}
@@ -191,10 +201,11 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="cvv" className="block text-sm font-medium text-gray-700 mb-1">
                   CVV
                 </label>
                 <input
+                  id="cvv"
                   type="text"
                   value={cvv}
                   onChange={(e) => setCvv(e.target.value.replace(/\D/g, ''))}
