@@ -11,7 +11,7 @@ interface DocumentCardProps {
   document: Document;
 }
 
-const DocumentCard: React.FC<DocumentCardProps> = ({ document, onView }) => {
+const DocumentCard: React.FC<DocumentCardProps> = ({ document }) => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Draft':
