@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, Package, MapPin, DollarSign, AlertCircle, Sparkles, TrendingUp } from 'lucide-react';
+import { Clock, Package, MapPin, AlertCircle, Sparkles, TrendingUp } from 'lucide-react';
 import { useAI } from '../hooks/useAI';
 
 interface ShippingOption {
