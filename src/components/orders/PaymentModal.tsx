@@ -4,7 +4,7 @@ import { XMarkIcon, CreditCardIcon } from '@heroicons/react/24/outline';
 import { useDispatch } from 'react-redux';
 import { updateOrderStatusAndGenerateLabel } from '../../store/slices/orderSlice';
 import confetti from 'canvas-confetti';
-import { AppDispatch } from '../../store'; // Import your AppDispatch type
+import { AppDispatch } from '../../store';
 
 interface PaymentModalProps {
   amount: number;
@@ -21,7 +21,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   onClose,
   onSuccess,
 }) => {
-  const dispatch = useDispatch<AppDispatch>(); // Use AppDispatch type
+  const dispatch = useDispatch<AppDispatch>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cardNumber, setCardNumber] = useState('');
@@ -85,7 +85,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       setProcessingStep('label');
-      const success = await dispatch(updateOrderStatusAndGenerateLabel({ orderId, status: 'SHIPPED' }));
+      const success = await dispatch(updateOrderStatusAndGenerateLabel(orderId, 'SHIPPED'));
 
       if (!success) {
         throw new Error('Failed to update order status');

@@ -54,7 +54,9 @@ const TopDestinationsChart: React.FC = () => {
       y: {
         beginAtZero: true,
         ticks: {
-          callback: (value: number) => `${value}%`
+          callback: function (value) {
+            return `${value}%`;
+          }
         }
       }
     }
