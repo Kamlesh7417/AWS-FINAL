@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   XMarkIcon, 
-  CreditCardIcon, 
-  CheckIcon 
+  CreditCardIcon
 } from '@heroicons/react/24/outline';
 import { useDispatch } from 'react-redux';
 import { updateOrderStatusAndGenerateLabel } from '../../store/slices/orderSlice';
