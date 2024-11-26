@@ -25,7 +25,6 @@ const Chat: React.FC = () => {
 
   const handleSendMessage = (message: string) => {
     console.log(`Message sent to ${selectedAgent?.name}:`, message);
-    // Add your logic to handle message sending
   };
 
   return (
@@ -37,9 +36,7 @@ const Chat: React.FC = () => {
       >
         Chat
       </motion.h1>
-
       <div className="h-[calc(100vh-12rem)] grid grid-cols-12 gap-6">
-        {/* Agents List */}
         <motion.div
           className="col-span-3 glass-card overflow-hidden"
           initial={{ opacity: 0, x: -20 }}
@@ -51,8 +48,6 @@ const Chat: React.FC = () => {
             onSelectAgent={setSelectedAgent}
           />
         </motion.div>
-
-        {/* Chat Area */}
         <motion.div
           className="col-span-6 flex flex-col"
           initial={{ opacity: 0, y: 20 }}
@@ -75,8 +70,6 @@ const Chat: React.FC = () => {
             </div>
           )}
         </motion.div>
-
-        {/* Activity Feed */}
         <motion.div
           className="col-span-3"
           initial={{ opacity: 0, x: 20 }}
