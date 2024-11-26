@@ -7,35 +7,26 @@ import {
   BarElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
 } from 'chart.js';
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const TopDestinationsChart: React.FC = () => {
   const data = {
-    labels: ['USA', 'UK', 'Australia', 'Germany', 'Japan'],
+    labels: ['USA', 'UK', 'Australia'],
     datasets: [
       {
         label: 'Shipment Volume',
-        data: [45, 35, 20, 25, 30],
+        data: [13, 7, 10],
         backgroundColor: [
           'rgba(79, 70, 229, 0.8)',
           'rgba(16, 185, 129, 0.8)',
           'rgba(245, 158, 11, 0.8)',
-          'rgba(99, 102, 241, 0.8)',
-          'rgba(236, 72, 153, 0.8)'
         ],
-        borderWidth: 1
-      }
-    ]
+        borderWidth: 1,
+      },
+    ],
   };
 
   const options = {
@@ -43,23 +34,26 @@ const TopDestinationsChart: React.FC = () => {
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'top' as const
+        position: 'top' as const,
       },
       title: {
         display: true,
-        text: 'Top Destinations'
-      }
+        text: 'Top Destinations',
+      },
     },
     scales: {
       y: {
         beginAtZero: true,
         ticks: {
-          callback: function (value: number) {
-            return `${value}%`;
-          }
-        }
-      }
-    }
+          callback: (tickValue: string | number) => {
+            if (typeof tickValue === 'number') {
+              return `${tickValue}%`;
+            }
+            return tickValue; // Handles string values (if any)
+          },
+        },
+      },
+    },
   };
 
   return (
