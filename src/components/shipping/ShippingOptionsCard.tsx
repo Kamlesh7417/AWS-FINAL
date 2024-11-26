@@ -19,15 +19,14 @@ interface ShippingOptionsCardProps {
 }
 
 const carrierLogos = {
-  'DHL': 'https://www.dhl.com/content/dam/dhl/global/core/images/logos/dhl-logo.svg',
-  'UPS': 'https://www.ups.com/assets/resources/images/UPS_logo.svg',
-  'FedEx': 'https://www.fedex.com/content/dam/fedex-com/logos/logo.png',
-  'Bluedart': 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNDAgODAiPjxwYXRoIGZpbGw9IiMwMDM0NzgiIGQ9Ik00My41IDBoMTUzdjgwSDQzLjV6Ii8+PHBhdGggZmlsbD0iI2ZmZiIgZD0iTTY4LjUgMjBoMTAzdjQwSDY4LjV6Ii8+PHRleHQgeD0iNzMuNSIgeT0iNDgiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzAwMzQ3OCI+Qmx1ZWRhcnQ8L3RleHQ+PC9zdmc+'
+  DHL: 'https://www.dhl.com/content/dam/dhl/global/core/images/logos/dhl-logo.svg',
+  UPS: 'https://www.ups.com/assets/resources/images/UPS_logo.svg',
+  FedEx: 'https://www.fedex.com/content/dam/fedex-com/logos/logo.png',
+  Bluedart:
+    'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNDAgODAiPjxwYXRoIGZpbGw9IiMwMDM0NzgiIGQ9Ik00My41IDBoMTUzdjgwSDQzLjV6Ii8+PHBhdGggZmlsbD0iI2ZmZiIgZD0iTTY4LjUgMjBoMTAzdjQwSDY4LjV6Ii8+PHRleHQgeD0iNzMuNSIgeT0iNDgiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzAwMzQ3OCI+Qmx1ZWRhcnQ8L3RleHQ+PC9zdmc+',
 };
 
 const ShippingOptionsCard: React.FC<ShippingOptionsCardProps> = ({ data, onSelect }) => {
-  const [showNegotiation, setShowNegotiation] = useState(false);
-
   const calculateDiscount = (original: number, negotiated: number) => {
     return Math.round(((original - negotiated) / original) * 100);
   };
@@ -47,9 +46,9 @@ const ShippingOptionsCard: React.FC<ShippingOptionsCardProps> = ({ data, onSelec
           {/* Header */}
           <div className="flex justify-between items-start mb-6">
             <div className="bg-white p-3 rounded-lg shadow-sm">
-              <img 
-                src={carrierLogos[option.carrier as keyof typeof carrierLogos]} 
-                alt={option.carrier} 
+              <img
+                src={carrierLogos[option.carrier as keyof typeof carrierLogos]}
+                alt={option.carrier}
                 className="h-8 object-contain"
               />
             </div>
@@ -90,12 +89,10 @@ const ShippingOptionsCard: React.FC<ShippingOptionsCardProps> = ({ data, onSelec
                   ₹{option.originalPrice.toLocaleString()}
                 </span>
               </div>
-              
+
               {/* AI Negotiated Price */}
               <div className="flex justify-between items-center mt-2 border-t pt-2">
-                <span className="text-green-600 text-sm font-medium">
-                  AI Negotiated Price
-                </span>
+                <span className="text-green-600 text-sm font-medium">AI Negotiated Price</span>
                 <div className="text-right">
                   <div className="text-lg font-bold text-gray-900">
                     ₹{option.negotiatedPrice.toLocaleString()}
@@ -114,7 +111,7 @@ const ShippingOptionsCard: React.FC<ShippingOptionsCardProps> = ({ data, onSelec
             whileTap={{ scale: 0.98 }}
             onClick={() => onSelect(option)}
             className={`w-full mt-6 px-4 py-2 text-white rounded-lg transition-colors duration-200 ${
-              option.isBestOption 
+              option.isBestOption
                 ? 'bg-primary-600 hover:bg-primary-700'
                 : 'bg-gray-600 hover:bg-gray-700'
             }`}
@@ -123,15 +120,6 @@ const ShippingOptionsCard: React.FC<ShippingOptionsCardProps> = ({ data, onSelec
           </motion.button>
         </motion.div>
       ))}
-
-      {showNegotiation && selectedOption && (
-        <NegotiationChat
-          messages={[]}
-          originalPrice={selectedOption.originalPrice}
-          finalPrice={selectedOption.negotiatedPrice}
-          onClose={() => setShowNegotiation(false)}
-        />
-      )}
     </div>
   );
 };
