@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useShipments } from '../hooks/useShipments';
 import ShipmentCard from '../components/shipping/ShipmentCard';
@@ -12,7 +12,7 @@ const Shipments: React.FC = () => {
   const [dateRange, setDateRange] = useState<'today' | 'week' | 'month' | 'custom' | null>(null);
   const [customDateRange, setCustomDateRange] = useState<{ start: Date | null; end: Date | null }>({
     start: null,
-    end: null
+    end: null,
   });
 
   const handleFiltersChange = (newFilters: any) => {
@@ -25,14 +25,14 @@ const Shipments: React.FC = () => {
     setCustomDateRange({ start: null, end: null });
   };
 
-  const filteredShipments = Object.values(shipments).filter(shipment => {
+  const filteredShipments = Object.values(shipments).filter((shipment) => {
     let matches = true;
 
     if (filters.search) {
-      matches = matches && (
-        shipment.orderId.toLowerCase().includes(filters.search.toLowerCase()) ||
-        shipment.id.toLowerCase().includes(filters.search.toLowerCase())
-      );
+      matches =
+        matches &&
+        (shipment.orderId.toLowerCase().includes(filters.search.toLowerCase()) ||
+          shipment.id.toLowerCase().includes(filters.search.toLowerCase()));
     }
 
     if (filters.status) {
@@ -42,7 +42,7 @@ const Shipments: React.FC = () => {
     if (dateRange || (customDateRange.start && customDateRange.end)) {
       const shipmentDate = new Date(shipment.eta);
       const today = new Date();
-      
+
       if (dateRange === 'today') {
         matches = matches && shipmentDate.toDateString() === today.toDateString();
       } else if (dateRange === 'week') {
@@ -52,7 +52,10 @@ const Shipments: React.FC = () => {
         const monthAgo = new Date(today.setMonth(today.getMonth() - 1));
         matches = matches && shipmentDate >= monthAgo;
       } else if (customDateRange.start && customDateRange.end) {
-        matches = matches && shipmentDate >= customDateRange.start && shipmentDate <= customDateRange.end;
+        matches =
+          matches &&
+          shipmentDate >= customDateRange.start &&
+          shipmentDate <= customDateRange.end;
       }
     }
 
@@ -66,7 +69,7 @@ const Shipments: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <motion.h1 
+      <motion.h1
         initial={{ x: -20, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         className="text-2xl font-bold bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent"
@@ -84,7 +87,13 @@ const Shipments: React.FC = () => {
         onCustomDateChange={setCustomDateRange}
         onStatusChange={(value) => handleFiltersChange({ ...filters, status: value })}
         onClearFilters={clearFilters}
-        statuses={['Order Received', 'Order Picked', 'Order in Transit', 'Out For Delivery', 'Reached Destination']}
+        statuses={[
+          'Order Received',
+          'Order Picked',
+          'Order in Transit',
+          'Out For Delivery',
+          'Reached Destination',
+        ]}
       />
 
       {loading ? (

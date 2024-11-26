@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Send, Phone, Video, MessageSquare } from 'lucide-react';
+import { Send, Phone, Video } from 'lucide-react';
 import { Agent } from '../../types/agents';
 
 interface AIAgentChatProps {

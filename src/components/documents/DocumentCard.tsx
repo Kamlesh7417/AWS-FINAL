@@ -9,7 +9,6 @@ import { Document } from '../../utils/mockData';
 
 interface DocumentCardProps {
   document: Document;
-  onView: () => void;
 }
 
 const DocumentCard: React.FC<DocumentCardProps> = ({ document, onView }) => {

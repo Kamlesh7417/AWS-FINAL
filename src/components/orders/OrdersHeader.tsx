@@ -2,7 +2,6 @@ import React from 'react';
 import { motion } from 'framer-motion';
 
 interface OrdersHeaderProps {
-  onRefresh: () => void;
 }
 
 const OrdersHeader: React.FC<OrdersHeaderProps> = ({ onRefresh }) => {

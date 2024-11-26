@@ -1,5 +1,5 @@
 import React from 'react';
-import { Clock, TrendingUp, Truck } from 'lucide-react';
+import { Clock} from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface ShippingOption {

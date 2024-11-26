@@ -1,8 +1,7 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
-  ShoppingBagIcon, 
+import {
+  ShoppingBagIcon,
   GlobeAsiaAustraliaIcon,
   TruckIcon,
   DocumentTextIcon,
@@ -10,41 +9,41 @@ import {
   UserGroupIcon,
   ArrowRightIcon,
   CheckCircleIcon,
-  SparklesIcon
+  SparklesIcon,
 } from '@heroicons/react/24/outline';
 
-const Landing = () => {
+const Landing: React.FC = () => {
   const features = [
     {
       icon: GlobeAsiaAustraliaIcon,
       title: 'Global Market Access',
-      description: 'Expand your business globally with our comprehensive export platform'
+      description: 'Expand your business globally with our comprehensive export platform',
     },
     {
       icon: SparklesIcon,
       title: 'AI Rate Negotiation',
-      description: 'Automated rate negotiation with carriers for best pricing'
+      description: 'Automated rate negotiation with carriers for best pricing',
     },
     {
       icon: DocumentTextIcon,
       title: 'Smart Documentation',
-      description: 'AI-powered document generation and compliance checks'
+      description: 'AI-powered document generation and compliance checks',
     },
     {
       icon: ChartBarIcon,
       title: 'Real-time Analytics',
-      description: 'Advanced insights and predictive analytics for better decisions'
+      description: 'Advanced insights and predictive analytics for better decisions',
     },
     {
       icon: UserGroupIcon,
       title: 'AI Support Team',
-      description: 'Intelligent virtual agents available 24/7 for assistance'
+      description: 'Intelligent virtual agents available 24/7 for assistance',
     },
     {
       icon: TruckIcon,
       title: 'Smart Shipping',
-      description: 'AI-powered rate negotiation for optimal savings'
-    }
+      description: 'AI-powered rate negotiation for optimal savings',
+    },
   ];
 
   const benefits = [
@@ -53,13 +52,13 @@ const Landing = () => {
     'Real-time shipment tracking',
     'AI-powered rate negotiation',
     'Multi-carrier rate comparison',
-    'AI-powered compliance checks'
+    'AI-powered compliance checks',
   ];
 
   return (
     <div className="min-h-screen bg-white">
       <div className="animated-bg"></div>
-      
+
       {/* Navigation */}
       <nav className="relative z-10 border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -77,10 +76,7 @@ const Landing = () => {
               </span>
             </div>
             <div className="flex items-center space-x-4">
-              <Link 
-                to="/login" 
-                className="btn btn-secondary"
-              >
+              <Link to="/login" className="btn btn-secondary">
                 Login
               </Link>
             </div>
@@ -171,7 +167,7 @@ const Landing = () => {
                 Why Choose ExportEdge?
               </h2>
               <p className="mt-4 text-lg text-gray-600">
-                Join thousands of businesses that trust ExportEdge for their international trade operations
+                Join thousands of businesses that trust ExportEdge for their international trade operations.
               </p>
               <div className="mt-8 space-y-4">
                 {benefits.map((benefit, index) => (
@@ -224,74 +220,8 @@ const Landing = () => {
                 </span>
               </div>
               <p className="mt-4 text-gray-600">
-                Empowering global trade through technology
+                Empowering global trade through technology.
               </p>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">
-                Product
-              </h3>
-              <ul className="mt-4 space-y-4">
-                <li>
-                  <a href="#features" className="text-gray-600 hover:text-primary-600">
-                    Features
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-gray-600 hover:text-primary-600">
-                    Pricing
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-gray-600 hover:text-primary-600">
-                    Documentation
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">
-                Company
-              </h3>
-              <ul className="mt-4 space-y-4">
-                <li>
-                  <a href="#" className="text-gray-600 hover:text-primary-600">
-                    About
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-gray-600 hover:text-primary-600">
-                    Blog
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-gray-600 hover:text-primary-600">
-                    Careers
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">
-                Legal
-              </h3>
-              <ul className="mt-4 space-y-4">
-                <li>
-                  <a href="#" className="text-gray-600 hover:text-primary-600">
-                    Privacy
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-gray-600 hover:text-primary-600">
-                    Terms
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-gray-600 hover:text-primary-600">
-                    Security
-                  </a>
-                </li>
-              </ul>
             </div>
           </div>
           <div className="mt-12 border-t border-gray-200 pt-8">

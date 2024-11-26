@@ -16,7 +16,6 @@ const AgentSelector: React.FC<AgentSelectorProps> = ({
   onSelectAgent,
   className = ''
 }) => {
-  const { t } = useTranslation();
 
   return (
     <div className={`bg-white rounded-lg shadow-sm ${className}`}>

@@ -1,13 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  XMarkIcon, 
-  CreditCardIcon, 
-  CheckIcon 
-} from '@heroicons/react/24/outline';
+import { XMarkIcon, CreditCardIcon } from '@heroicons/react/24/outline';
 import { useDispatch } from 'react-redux';
 import { updateOrderStatusAndGenerateLabel } from '../../store/slices/orderSlice';
 import confetti from 'canvas-confetti';
+import { AppDispatch } from '../../store'; // Import your AppDispatch type
 
 interface PaymentModalProps {
   amount: number;
@@ -17,20 +14,22 @@ interface PaymentModalProps {
   onSuccess: () => void;
 }
 
-const PaymentModal: React.FC<PaymentModalProps> = ({ 
-  amount, 
-  carrierName, 
+const PaymentModal: React.FC<PaymentModalProps> = ({
+  amount,
+  carrierName,
   orderId,
-  onClose, 
-  onSuccess 
+  onClose,
+  onSuccess,
 }) => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>(); // Use AppDispatch type
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cardNumber, setCardNumber] = useState('');
   const [expiry, setExpiry] = useState('');
   const [cvv, setCvv] = useState('');
-  const [processingStep, setProcessingStep] = useState<'payment' | 'label' | 'success'>('payment');
+  const [processingStep, setProcessingStep] = useState<'payment' | 'label' | 'success'>(
+    'payment'
+  );
 
   const formatCardNumber = (value: string) => {
     const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
@@ -42,11 +41,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
       parts.push(match.substring(i, i + 4));
     }
 
-    if (parts.length) {
-      return parts.join(' ');
-    } else {
-      return value;
-    }
+    return parts.length ? parts.join(' ') : value;
   };
 
   const formatExpiry = (value: string) => {
@@ -63,7 +58,6 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     setLoading(true);
 
     try {
-      // Basic validation
       if (!cardNumber.trim() || !expiry.trim() || !cvv.trim()) {
         throw new Error('Please fill in all payment details');
       }
@@ -77,40 +71,40 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
       }
 
       const [expiryMonth, expiryYear] = expiry.split('/');
-      if (!expiryMonth || !expiryYear || 
-          parseInt(expiryMonth) < 1 || parseInt(expiryMonth) > 12 ||
-          parseInt(expiryYear) < 23) {
+      if (
+        !expiryMonth ||
+        !expiryYear ||
+        parseInt(expiryMonth) < 1 ||
+        parseInt(expiryMonth) > 12 ||
+        parseInt(expiryYear) < 23
+      ) {
         throw new Error('Invalid expiry date');
       }
 
-      // Process payment
       setProcessingStep('payment');
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // Update order status and generate label
       setProcessingStep('label');
-      const success = await dispatch(updateOrderStatusAndGenerateLabel(orderId, 'SHIPPED'));
+      const success = await dispatch(updateOrderStatusAndGenerateLabel({ orderId, status: 'SHIPPED' }));
 
       if (!success) {
         throw new Error('Failed to update order status');
       }
 
-      // Show success and trigger confetti
       setProcessingStep('success');
       confetti({
         particleCount: 100,
         spread: 70,
-        origin: { y: 0.6 }
+        origin: { y: 0.6 },
       });
 
-      // Delay slightly before closing to show success state
       setTimeout(() => {
         onSuccess();
       }, 1500);
-
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Payment processing failed. Please try again.');
-      console.error('Payment failed:', err);
+      setError(
+        err instanceof Error ? err.message : 'Payment processing failed. Please try again.'
+      );
       setProcessingStep('payment');
     } finally {
       setLoading(false);
@@ -130,28 +124,23 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
         className="bg-white rounded-lg w-full max-w-md m-4"
-        onClick={e => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6 border-b flex justify-between items-center">
           <div className="flex items-center space-x-2">
             <CreditCardIcon className="h-6 w-6 text-primary-600" />
             <h3 className="text-xl font-semibold">Payment Details</h3>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg"
-          >
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
             <XMarkIcon className="h-6 w-6 text-gray-500" />
           </button>
         </div>
 
         <div className="p-6">
-          <div className="mb-6">
-            <div className="text-center">
-              <p className="text-sm text-gray-600">Amount to Pay</p>
-              <p className="text-3xl font-bold text-gray-900">₹{amount.toLocaleString()}</p>
-              <p className="text-sm text-gray-600 mt-1">to {carrierName}</p>
-            </div>
+          <div className="mb-6 text-center">
+            <p className="text-sm text-gray-600">Amount to Pay</p>
+            <p className="text-3xl font-bold text-gray-900">₹{amount.toLocaleString()}</p>
+            <p className="text-sm text-gray-600 mt-1">to {carrierName}</p>
           </div>
 
           {error && (
@@ -219,8 +208,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                   <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
                   <span>
                     {processingStep === 'payment' ? 'Processing Payment...' :
-                     processingStep === 'label' ? 'Generating Label...' :
-                     'Completing...'}
+                    processingStep === 'label' ? 'Generating Label...' :
+                    'Completing...'}
                   </span>
                 </div>
               ) : (

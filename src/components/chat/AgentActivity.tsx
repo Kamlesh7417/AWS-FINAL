@@ -8,7 +8,6 @@ interface AgentActivityProps {
 }
 
 const AgentActivity: React.FC<AgentActivityProps> = ({ activities }) => {
-  const { t } = useTranslation();
 
   return (
     <div className="glass-card">

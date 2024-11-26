@@ -13,8 +13,6 @@ export interface TrackingEvent {
 interface ShipmentTrackingProps {
   shipmentId: string;
   events: TrackingEvent[];
-  estimatedDelivery: string;
-  transportMode: 'sea' | 'air' | 'road';
   status: string;
   progress: number;
 }
@@ -22,8 +20,6 @@ interface ShipmentTrackingProps {
 const ShipmentTracking: React.FC<ShipmentTrackingProps> = ({
   shipmentId,
   events,
-  estimatedDelivery,
-  transportMode,
   status,
   progress
 }) => {

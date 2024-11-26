@@ -1,10 +1,19 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import { FileText, TrendingUp, AlertCircle, Truck, Package, MapPin } from 'lucide-react';
 
 interface ShippingDetailsProps {
-  selectedOption: any;
-  orderDetails: any;
+  selectedOption: {
+    carrier: string;
+    service: string;
+    days: number;
+    documentation: string[];
+    co2: number;
+  };
+  orderDetails: {
+    id: string;
+    origin: string;
+    destination: string;
+  };
 }
 
 const ShippingDetails = ({ selectedOption, orderDetails }: ShippingDetailsProps) => {
@@ -81,7 +90,7 @@ const ShippingDetails = ({ selectedOption, orderDetails }: ShippingDetailsProps)
       >
         <h3 className="text-lg font-semibold mb-4">Required Documents</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {selectedOption.documentation.map((doc: string, index: number) => (
+          {selectedOption.documentation.map((doc, index) => (
             <div
               key={index}
               className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg"

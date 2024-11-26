@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ClockIcon, SparklesIcon, StarIcon } from '@heroicons/react/24/outline';
-import NegotiationChat, { NegotiationMessage } from './NegotiationChat';
 
 interface ShippingOption {
   carrier: string;
@@ -28,7 +27,6 @@ const carrierLogos = {
 
 const ShippingOptionsCard: React.FC<ShippingOptionsCardProps> = ({ data, onSelect }) => {
   const [showNegotiation, setShowNegotiation] = useState(false);
-  const [selectedOption, setSelectedOption] = useState<ShippingOption | null>(null);
 
   const calculateDiscount = (original: number, negotiated: number) => {
     return Math.round(((original - negotiated) / original) * 100);

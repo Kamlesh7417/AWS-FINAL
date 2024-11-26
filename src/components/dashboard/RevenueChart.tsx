@@ -10,7 +10,7 @@ import {
   Title,
   Tooltip,
   Legend,
-  Filler
+  Filler,
 } from 'chart.js';
 
 ChartJS.register(
@@ -25,8 +25,6 @@ ChartJS.register(
 );
 
 const RevenueChart: React.FC = () => {
-  const { t } = useTranslation();
-
   const data = {
     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
     datasets: [
@@ -36,7 +34,7 @@ const RevenueChart: React.FC = () => {
         borderColor: '#4f46e5',
         backgroundColor: 'rgba(79, 70, 229, 0.1)',
         fill: true,
-        tension: 0.4
+        tension: 0.4,
       },
       {
         label: 'Profit',
@@ -44,9 +42,9 @@ const RevenueChart: React.FC = () => {
         borderColor: '#10b981',
         backgroundColor: 'rgba(16, 185, 129, 0.1)',
         fill: true,
-        tension: 0.4
-      }
-    ]
+        tension: 0.4,
+      },
+    ],
   };
 
   const options = {
@@ -54,21 +52,23 @@ const RevenueChart: React.FC = () => {
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'top' as const
+        position: 'top' as const,
       },
       title: {
         display: true,
-        text: 'Revenue Trends'
-      }
+        text: 'Revenue Trends',
+      },
     },
     scales: {
       y: {
         beginAtZero: true,
         ticks: {
-          callback: (value: number) => `₹${value.toLocaleString()}`
-        }
-      }
-    }
+          callback: function (value: string | number) {
+            return `₹${Number(value).toLocaleString()}`;
+          },
+        },
+      },
+    },
   };
 
   return (
