@@ -8,12 +8,14 @@ interface AgentChatProps {
   agent: Agent;
   messages: AgentMessage[];
   className?: string;
+  onSendMessage?: (message: string) => void; // Added this prop
 }
 
 const AgentChat: React.FC<AgentChatProps> = ({
   agent,
   messages: initialMessages,
   className = '',
+  onSendMessage, // Allowing external message handling
 }) => {
   const [messages, setMessages] = useState<AgentMessage[]>(initialMessages);
   const [newMessage, setNewMessage] = useState('');
@@ -43,6 +45,7 @@ const AgentChat: React.FC<AgentChatProps> = ({
       };
       setMessages((prev) => [...prev, userMessage]);
       setNewMessage('');
+      onSendMessage?.(messageText); // Trigger external onSendMessage if provided
     }
 
     setLoading(true);
@@ -225,11 +228,7 @@ const AgentChat: React.FC<AgentChatProps> = ({
     <div className={`flex flex-col h-full bg-white rounded-lg shadow-sm ${className}`}>
       <div className="p-4 border-b">
         <div className="flex items-center space-x-3">
-          <img
-            src={agent.avatar}
-            alt={agent.name}
-            className="w-10 h-10 rounded-full"
-          />
+          <img src={agent.avatar} alt={agent.name} className="w-10 h-10 rounded-full" />
           <div>
             <h3 className="font-medium text-gray-900">{agent.name}</h3>
             <p className="text-sm text-gray-500">{agent.role}</p>
@@ -249,9 +248,7 @@ const AgentChat: React.FC<AgentChatProps> = ({
             >
               <div
                 className={`max-w-[80%] rounded-lg p-3 ${
-                  message.agentId === agent.id
-                    ? 'bg-gray-100'
-                    : 'bg-primary-600 text-white'
+                  message.agentId === agent.id ? 'bg-gray-100' : 'bg-primary-600 text-white'
                 }`}
               >
                 {renderMessage(message)}
