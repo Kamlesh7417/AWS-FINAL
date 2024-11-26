@@ -16,16 +16,21 @@ const Chat: React.FC = () => {
   React.useEffect(() => {
     if (selectedAgent) {
       setFilteredActivities(
-        recentActivities.filter(activity => activity.agentId === selectedAgent.id)
+        recentActivities.filter((activity) => activity.agentId === selectedAgent.id)
       );
     } else {
       setFilteredActivities(recentActivities);
     }
   }, [selectedAgent]);
 
+  const handleSendMessage = (message: string) => {
+    console.log(`Message sent to ${selectedAgent?.name}:`, message);
+    // Add your logic to handle message sending
+  };
+
   return (
     <div className="space-y-6">
-      <motion.h1 
+      <motion.h1
         initial={{ x: -20, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         className="text-2xl font-bold bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent"
@@ -35,7 +40,7 @@ const Chat: React.FC = () => {
 
       <div className="h-[calc(100vh-12rem)] grid grid-cols-12 gap-6">
         {/* Agents List */}
-        <motion.div 
+        <motion.div
           className="col-span-3 glass-card overflow-hidden"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -48,7 +53,7 @@ const Chat: React.FC = () => {
         </motion.div>
 
         {/* Chat Area */}
-        <motion.div 
+        <motion.div
           className="col-span-6 flex flex-col"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -57,7 +62,7 @@ const Chat: React.FC = () => {
             <AgentChat
               agent={selectedAgent}
               messages={[]}
-              onSendMessage={() => {}}
+              onSendMessage={handleSendMessage}
             />
           ) : (
             <div className="h-full glass-card flex items-center justify-center">
@@ -65,16 +70,14 @@ const Chat: React.FC = () => {
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
                   {t('chat.select_agent')}
                 </h3>
-                <p className="text-gray-500">
-                  {t('chat.select_agent_desc')}
-                </p>
+                <p className="text-gray-500">{t('chat.select_agent_desc')}</p>
               </div>
             </div>
           )}
         </motion.div>
 
         {/* Activity Feed */}
-        <motion.div 
+        <motion.div
           className="col-span-3"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
