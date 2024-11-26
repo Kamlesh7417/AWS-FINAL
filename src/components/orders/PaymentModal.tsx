@@ -5,8 +5,8 @@ import {
   CreditCardIcon
 } from '@heroicons/react/24/outline';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '../../store';
-import { updateOrderStatusAndGenerateLabel } from '../../store/slices/orderSlice';
+import { AppDispatch, RootState } from '../../../react-redux/store';
+import { updateOrderStatusAndGenerateLabel } from '../../../react-redux/store/slices/orderSlice';
 import confetti from 'canvas-confetti';
 
 export const useAppDispatch: () => AppDispatch = useDispatch;
