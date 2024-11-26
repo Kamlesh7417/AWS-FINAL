@@ -13,18 +13,25 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import LanguageSelector from './LanguageSelector';
 
+interface NavItem {
+  path: string;
+  icon: React.ElementType; // Type for React component
+  label: string;
+  animation: string;
+}
+
 const Navbar: React.FC = () => {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();
 
-  const navItems = [
-    { path: '/dashboard', icon: HomeIcon, label: 'Dashboard', animation: 'icon-pulse' },
-    { path: '/orders', icon: ShoppingBagIcon, label: 'Orders', animation: 'icon-bounce' },
-    { path: '/documents', icon: DocumentTextIcon, label: 'Documents', animation: 'icon-float' },
-    { path: '/shipments', icon: TruckIcon, label: 'Shipments', animation: 'icon-spin' },
-    { path: '/chat', icon: ChatBubbleLeftRightIcon, label: 'Chat', animation: 'icon-bounce' }
+  const navItems: NavItem[] = [
+    { path: '/dashboard', icon: HomeIcon, label: t('Dashboard'), animation: 'icon-pulse' },
+    { path: '/orders', icon: ShoppingBagIcon, label: t('Orders'), animation: 'icon-bounce' },
+    { path: '/documents', icon: DocumentTextIcon, label: t('Documents'), animation: 'icon-float' },
+    { path: '/shipments', icon: TruckIcon, label: t('Shipments'), animation: 'icon-spin' },
+    { path: '/chat', icon: ChatBubbleLeftRightIcon, label: t('Chat'), animation: 'icon-bounce' },
   ];
 
   const handleLogout = () => {
@@ -59,14 +66,18 @@ const Navbar: React.FC = () => {
                   to={item.path}
                   className={`nav-link ${location.pathname === item.path ? 'active' : ''}`}
                 >
-                  <item.icon className={`h-5 w-5 ${location.pathname === item.path ? item.animation : ''}`} />
+                  <item.icon
+                    className={`h-5 w-5 ${
+                      location.pathname === item.path ? item.animation : ''
+                    }`}
+                  />
                   <span>{item.label}</span>
                 </Link>
               ))}
             </div>
           </div>
 
-          {/* Right side items */}
+          {/* Right-side items */}
           <div className="flex items-center space-x-4">
             <LanguageSelector />
 
@@ -77,7 +88,7 @@ const Navbar: React.FC = () => {
               className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors duration-200"
             >
               <ArrowRightOnRectangleIcon className="h-5 w-5" />
-              <span>Logout</span>
+              <span>{t('Logout')}</span>
             </motion.button>
           </div>
         </div>
@@ -92,7 +103,11 @@ const Navbar: React.FC = () => {
               to={item.path}
               className={`nav-link ${location.pathname === item.path ? 'active' : ''}`}
             >
-              <item.icon className={`h-5 w-5 ${location.pathname === item.path ? item.animation : ''}`} />
+              <item.icon
+                className={`h-5 w-5 ${
+                  location.pathname === item.path ? item.animation : ''
+                }`}
+              />
               <span>{item.label}</span>
             </Link>
           ))}
