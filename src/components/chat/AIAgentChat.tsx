@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Phone, Video } from 'lucide-react';
 import { Agent } from '../../types/agents';
@@ -17,47 +17,13 @@ const AIAgentChat: React.FC<AIAgentChatProps> = ({
   onStartVideo
 }) => {
   const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState<{ sender: string; content: string }[]>([]);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  // Scroll to the bottom of the chat when messages update
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
 
   const handleSend = () => {
     if (message.trim()) {
-      // Add user message to chat
-      const userMessage = { sender: 'You', content: message.trim() };
-      setMessages((prev) => [...prev, userMessage]);
-
-      onSendMessage(message.trim());
+      onSendMessage(message);
       setMessage('');
     }
   };
-
-  const renderMessage = (sender: string, content: string) => (
-    <div
-      className={`mb-4 ${
-        sender === 'You' ? 'text-right' : 'text-left'
-      }`}
-    >
-      <div
-        className={`inline-block rounded-lg p-3 ${
-          sender === 'You'
-            ? 'bg-primary-600 text-white'
-            : 'bg-gray-100 text-gray-900'
-        }`}
-      >
-        <p className="text-sm">{content}</p>
-      </div>
-      <div className="text-xs text-gray-500 mt-1">{sender}</div>
-    </div>
-  );
 
   return (
     <div className="flex flex-col h-full bg-white rounded-lg shadow-sm">
@@ -97,8 +63,7 @@ const AIAgentChat: React.FC<AIAgentChatProps> = ({
       </div>
 
       <div className="flex-1 p-4 overflow-y-auto">
-        {messages.map((msg) => renderMessage(msg.sender, msg.content))}
-        <div ref={messagesEndRef} />
+        {/* Chat messages will be rendered here */}
       </div>
 
       <div className="p-4 border-t">
