@@ -7,15 +7,13 @@ import axios from 'axios';
 interface AgentChatProps {
   agent: Agent;
   messages: AgentMessage[];
-  onSendMessage: (message: string) => void;
   className?: string;
 }
 
 const AgentChat: React.FC<AgentChatProps> = ({
   agent,
   messages: initialMessages,
-  onSendMessage,
-  className = ''
+  className = '',
 }) => {
   const [messages, setMessages] = useState<AgentMessage[]>(initialMessages);
   const [newMessage, setNewMessage] = useState('');
@@ -36,98 +34,104 @@ const AgentChat: React.FC<AgentChatProps> = ({
 
     const messageText = retrying ? messages[messages.length - 2].content : newMessage;
     if (!retrying) {
-      // Add user message
       const userMessage: AgentMessage = {
         id: Date.now().toString(),
         agentId: 'user',
         content: messageText,
         timestamp: new Date().toISOString(),
-        type: 'text'
+        type: 'text',
       };
-      setMessages(prev => [...prev, userMessage]);
+      setMessages((prev) => [...prev, userMessage]);
       setNewMessage('');
     }
 
     setLoading(true);
 
     try {
-      // Only make API call if it's the DocuGuard agent
       if (agent.id === 'doc-agent') {
-        const response = await axios.post('https://bi5e25o5we.execute-api.us-east-1.amazonaws.com/dev/compliance', {
-          message: messageText
-        }, {
-          timeout: 10000, // 10 second timeout
-          headers: {
-            'Content-Type': 'application/json'
+        const response = await axios.post(
+          'https://bi5e25o5we.execute-api.us-east-1.amazonaws.com/dev/compliance',
+          { message: messageText },
+          {
+            timeout: 10000,
+            headers: {
+              'Content-Type': 'application/json',
+            },
           }
-        });
+        );
 
-        // Reset retry count on success
         setRetryCount(0);
 
-        // Safely handle the response data
         const responseData = response.data;
-        const aiResponse = typeof responseData === 'string' ? responseData :
-                         responseData.message || responseData.response || 
-                         "I've analyzed your request. How else can I help?";
+        const aiResponse =
+          typeof responseData === 'string'
+            ? responseData
+            : responseData.message ||
+              responseData.response ||
+              "I've analyzed your request. How else can I help?";
 
-        // Add AI response
         const aiMessage: AgentMessage = {
           id: `${Date.now()}-ai`,
           agentId: agent.id,
           content: aiResponse,
           timestamp: new Date().toISOString(),
           type: 'text',
-          metadata: responseData.suggestions ? {
-            suggestions: Array.isArray(responseData.suggestions) ? 
-                       responseData.suggestions.map(String) : 
-                       []
-          } : undefined
+          metadata: responseData.suggestions
+            ? {
+                suggestions: Array.isArray(responseData.suggestions)
+                  ? responseData.suggestions.map(String)
+                  : [],
+              }
+            : undefined,
         };
 
-        setMessages(prev => [...prev, aiMessage]);
+        setMessages((prev) => [...prev, aiMessage]);
       } else {
-        // Default response for other agents
         const aiMessage: AgentMessage = {
           id: `${Date.now()}-ai`,
           agentId: agent.id,
           content: "I understand your request. How can I assist you further?",
           timestamp: new Date().toISOString(),
-          type: 'text'
+          type: 'text',
         };
 
-        setMessages(prev => [...prev, aiMessage]);
+        setMessages((prev) => [...prev, aiMessage]);
       }
     } catch (error) {
-      const isNetworkError = axios.isAxiosError(error) && 
+      const isNetworkError =
+        axios.isAxiosError(error) &&
         (error.code === 'ECONNABORTED' || !error.response || error.response.status >= 500);
 
       const canRetry = retryCount < 2 && isNetworkError;
-      
+
       const errorMessage: AgentMessage = {
         id: `${Date.now()}-error`,
         agentId: agent.id,
-        content: canRetry ? 
-          "I'm having trouble connecting. Would you like me to try again?" :
-          "I apologize, but I'm experiencing technical difficulties. Please try again later.",
+        content: canRetry
+          ? "I'm having trouble connecting. Would you like me to try again?"
+          : "I apologize, but I'm experiencing technical difficulties. Please try again later.",
         timestamp: new Date().toISOString(),
         type: 'alert',
         metadata: {
           alert: {
             type: 'error',
-            title: 'Connection Error'
+            title: 'Connection Error',
           },
-          actions: canRetry ? [{
-            label: 'Retry',
-            value: 'retry'
-          }] : undefined
-        }
+          actions: canRetry
+            ? [
+                {
+                  label: 'Retry',
+                  value: 'retry',
+                },
+              ]
+            : undefined,
+        },
       };
 
-      setMessages(prev => [...prev, errorMessage]);
+      setMessages((prev) => [...prev, errorMessage]);
 
       if (canRetry) {
-        setRetryCount(prev => prev + 1);
+        setRetryCount((prev) => prev + 1);
       }
     } finally {
       setLoading(false);
@@ -182,12 +186,17 @@ const AgentChat: React.FC<AgentChatProps> = ({
         );
       case 'alert':
         return (
-          <div className={`p-3 rounded-lg ${
-            message.metadata?.alert?.type === 'warning' ? 'bg-yellow-50 text-yellow-800' :
-            message.metadata?.alert?.type === 'error' ? 'bg-red-50 text-red-800' :
-            message.metadata?.alert?.type === 'success' ? 'bg-green-50 text-green-800' :
-            'bg-blue-50 text-blue-800'
-          }`}>
+          <div
+            className={`p-3 rounded-lg ${
+              message.metadata?.alert?.type === 'warning'
+                ? 'bg-yellow-50 text-yellow-800'
+                : message.metadata?.alert?.type === 'error'
+                ? 'bg-red-50 text-red-800'
+                : message.metadata?.alert?.type === 'success'
+                ? 'bg-green-50 text-green-800'
+                : 'bg-blue-50 text-blue-800'
+            }`}
+          >
             {message.metadata?.alert?.title && (
               <h4 className="font-medium mb-1">{message.metadata.alert.title}</h4>
             )}
