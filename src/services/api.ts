@@ -18,7 +18,7 @@ export interface OrderResponse {
 }
 
 const api = axios.create({
-    baseURL: process.env.https://bi5e25o5we.execute-api.us-east-1.amazonaws.com/dev/compliance ||'/api',
+    baseURL:  '/api',
     timeout: 10000,
 });
 
