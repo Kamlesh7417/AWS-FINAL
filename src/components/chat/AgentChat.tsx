@@ -8,6 +8,7 @@ const AgentChat: React.FC = () => {
     const [messages, setMessages] = useState<{ sender: string; content: string }[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     // Scroll to the bottom of the chat
@@ -28,6 +29,7 @@ const AgentChat: React.FC = () => {
         // Append the user's message to the chat
         setMessages((prev) => [...prev, { sender: 'You', content: userMessage }]);
         setNewMessage('');
+        setError(null); // Clear any previous errors
         setLoading(true);
 
         try {
@@ -50,11 +52,17 @@ const AgentChat: React.FC = () => {
         } catch (error) {
             console.error('Error:', error);
 
-            // Show error message if the API call fails
+            const errorMessage =
+                axios.isAxiosError(error) && error.response
+                    ? `API Error: ${error.response.status} - ${error.response.statusText}`
+                    : 'Failed to fetch response. Please try again later.';
+
+            // Show error message
             setMessages((prev) => [
                 ...prev,
-                { sender: 'Error', content: 'Failed to fetch response. Please try again later.' },
+                { sender: 'Error', content: errorMessage },
             ]);
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -75,7 +83,11 @@ const AgentChat: React.FC = () => {
             >
                 {messages.map((msg, index) => (
                     <div key={index} style={{ marginBottom: '15px' }}>
-                        <strong style={{ color: msg.sender === 'You' ? '#007BFF' : '#28A745' }}>
+                        <strong
+                            style={{
+                                color: msg.sender === 'You' ? '#007BFF' : msg.sender === 'API' ? '#28A745' : '#FF0000',
+                            }}
+                        >
                             {msg.sender}:
                         </strong>{' '}
                         <span>{msg.content}</span>
@@ -83,6 +95,19 @@ const AgentChat: React.FC = () => {
                 ))}
                 <div ref={messagesEndRef} />
             </div>
+            {error && (
+                <div
+                    style={{
+                        backgroundColor: '#ffcccc',
+                        color: '#990000',
+                        padding: '10px',
+                        borderRadius: '4px',
+                        marginBottom: '10px',
+                    }}
+                >
+                    {error}
+                </div>
+            )}
             <form onSubmit={handleSend} style={{ display: 'flex', gap: '10px' }}>
                 <input
                     type="text"
@@ -97,6 +122,7 @@ const AgentChat: React.FC = () => {
                         borderRadius: '4px',
                     }}
                     disabled={loading}
+                    aria-label="Message input"
                 />
                 <button
                     type="submit"
@@ -108,12 +134,40 @@ const AgentChat: React.FC = () => {
                         color: '#fff',
                         border: 'none',
                         borderRadius: '4px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                     }}
                     disabled={loading}
                 >
-                    {loading ? 'Sending...' : 'Send'}
+                    {loading ? (
+                        <div
+                            style={{
+                                border: '2px solid #fff',
+                                borderTop: '2px solid transparent',
+                                borderRadius: '50%',
+                                width: '16px',
+                                height: '16px',
+                                animation: 'spin 1s linear infinite',
+                            }}
+                        ></div>
+                    ) : (
+                        'Send'
+                    )}
                 </button>
             </form>
+            <style>
+                {`
+                    @keyframes spin {
+                        from {
+                            transform: rotate(0deg);
+                        }
+                        to {
+                            transform: rotate(360deg);
+                        }
+                    }
+                `}
+            </style>
         </div>
     );
 };
