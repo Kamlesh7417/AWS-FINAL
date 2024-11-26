@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux';
 import { addShippingLabel } from '../../store/slices/documentSlice';
 import Barcode from 'react-barcode';
 import { MOCK_SHIPMENTS } from '../../utils/mockData';
-import * as confetti from 'canvas-confetti'; // Correctly importing the UMD module
+import confetti from 'canvas-confetti'; // Corrected import
 
 interface ShippingLabelProps {
   order: any;
@@ -28,7 +28,7 @@ const ShippingLabel: React.FC<ShippingLabelProps> = ({ order, onClose, onGenerat
 
   const handlePrintLabel = () => {
     // Trigger confetti
-    confetti.default({
+    confetti({
       particleCount: 100,
       spread: 70,
       origin: { y: 0.6 },
