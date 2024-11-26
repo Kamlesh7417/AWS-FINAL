@@ -58,8 +58,6 @@ const Chat: React.FC = () => {
               agent={selectedAgent}
               messages={[]}
               onSendMessage={() => {}}
-              onStartCall={() => {}}
-              onStartVideo={() => {}}
             />
           ) : (
             <div className="h-full glass-card flex items-center justify-center">
