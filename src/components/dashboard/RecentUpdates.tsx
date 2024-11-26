@@ -2,15 +2,12 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { 
-  BellIcon,
   ShoppingBagIcon,
   TruckIcon,
-  DocumentTextIcon,
-  ExclamationTriangleIcon
+  DocumentTextIcon
 } from '@heroicons/react/24/outline';
 
 const RecentUpdates: React.FC = () => {
-  const { t } = useTranslation();
 
   const updates = [
     {
