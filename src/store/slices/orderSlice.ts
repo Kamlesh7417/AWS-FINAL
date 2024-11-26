@@ -1,5 +1,5 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { Order, MOCK_ORDERS, MOCK_SHIPMENTS } from '../../utils/mockData';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { Order, MOCK_ORDERS } from '../../utils/mockData';
 import { addShippingLabel } from './documentSlice';
 import { AppDispatch } from '../store';
 
@@ -25,12 +25,12 @@ const initialState: OrderState = {
   selectedOrderId: null,
   pagination: {
     currentPage: 1,
-    itemsPerPage: 10
+    itemsPerPage: 10,
   },
   filters: {
     search: '',
-    status: null
-  }
+    status: null,
+  },
 };
 
 // Thunk to update order status and generate label
@@ -41,35 +41,40 @@ export const updateOrderStatusAndGenerateLabel = (orderId: string, status: strin
       dispatch(updateOrderStatus({ orderId, status }));
 
       // Generate shipping label document
-      const shipment = orderId === 'ORD34001' ? {
-        carrier: 'DHL Express',
-        tracking_number: 'DHL7890123456'
-      } : {
-        carrier: 'FedEx',
-        tracking_number: `TRK${Math.floor(100000 + Math.random() * 900000)}`
-      };
+      const shipment =
+        orderId === 'ORD34001'
+          ? {
+              carrier: 'DHL Express',
+              tracking_number: 'DHL7890123456',
+            }
+          : {
+              carrier: 'FedEx',
+              tracking_number: `TRK${Math.floor(100000 + Math.random() * 900000)}`,
+            };
 
       // Add shipping label to documents
-      dispatch(addShippingLabel({
-        id: `DOC-${orderId}-LABEL`,
-        orderId: orderId,
-        name: 'Shipping Label',
-        type: 'Label',
-        date: new Date().toISOString(),
-        size: '125 KB',
-        status: 'Final',
-        url: `https://aws-exportedge-dev-order-processing-bucket.s3.us-east-1.amazonaws.com/orders_docs/${orderId}/${orderId}_label.pdf`,
-        carrier: shipment.carrier,
-        trackingNumber: shipment.tracking_number
-      }));
+      dispatch(
+        addShippingLabel({
+          id: `DOC-${orderId}-LABEL`,
+          orderId: orderId,
+          name: 'Shipping Label',
+          type: 'Label',
+          date: new Date().toISOString(),
+          size: '125 KB',
+          status: 'Final',
+          url: `https://aws-exportedge-dev-order-processing-bucket.s3.us-east-1.amazonaws.com/orders_docs/${orderId}/${orderId}_label.pdf`,
+          carrier: shipment.carrier,
+          trackingNumber: shipment.tracking_number,
+        })
+      );
 
       // Update local storage to persist order status
       const updatedOrders = {
         ...MOCK_ORDERS,
         [orderId]: {
           ...MOCK_ORDERS[orderId],
-          order_status: status as Order['order_status']
-        }
+          order_status: status as Order['order_status'],
+        },
       };
       localStorage.setItem('orders', JSON.stringify(updatedOrders));
 
@@ -104,8 +109,8 @@ const orderSlice = createSlice({
     clearFilters: (state) => {
       state.filters = initialState.filters;
       state.pagination.currentPage = 1;
-    }
-  }
+    },
+  },
 });
 
 export const { setOrders, updateOrderStatus, setFilters, setPage, clearFilters } = orderSlice.actions;
