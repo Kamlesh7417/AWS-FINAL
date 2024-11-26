@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, Clock, DollarSign, Truck } from 'lucide-react';
 
@@ -57,7 +56,7 @@ const CarrierComparison = ({ carriers }: { carriers: ComparisonData[] }) => {
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div
                   className="bg-orange-500 rounded-full h-2"
-                  style={{ width: `${100 - (carrier.metrics.avgDelay * 20)}%` }}
+                  style={{ width: `${100 - carrier.metrics.avgDelay * 20}%` }}
                 />
               </div>
             </div>
