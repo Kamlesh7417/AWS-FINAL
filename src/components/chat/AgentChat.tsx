@@ -34,7 +34,7 @@ const AgentChat: React.FC<AgentChatProps> = ({
   const handleSend = async (retrying: boolean = false) => {
     if ((!newMessage.trim() && !retrying) || loading) return;
 
-    const messageText = retrying ? messages[messages.length - 2].content : newMessage;
+    const messageText = retrying ? messages[messages.length - 2]?.content : newMessage;
 
     if (!retrying) {
       const userMessage: AgentMessage = {
@@ -265,7 +265,8 @@ const AgentChat: React.FC<AgentChatProps> = ({
 
       <div className="p-4 border-t">
         <div className="flex items-center space-x-2">
-          <button className="p-2 text-gray-600 hover:text-primary-600 rounded-full hover:bg-gray-100">
+          <button className="p-2 text-gray-600 hover:text-primary-600 rounded-full hover
+:bg-gray-100">
             <Paperclip className="h-5 w-5" />
           </button>
           <input
