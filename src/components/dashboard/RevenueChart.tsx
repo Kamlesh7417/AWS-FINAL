@@ -25,7 +25,6 @@ ChartJS.register(
 );
 
 const RevenueChart: React.FC = () => {
-  const { t } = useTranslation();
 
   const data = {
     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
