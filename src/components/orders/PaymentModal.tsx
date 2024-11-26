@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { XMarkIcon, CreditCardIcon } from '@heroicons/react/24/outline';
 import { useDispatch } from 'react-redux';
-import { updateOrderStatusAndGenerateLabel } from '../../../redux/slices/orderSlice'; // Corrected path for orderSlice
-import { AppDispatch } from '../../../redux/store'; // Corrected path for store
 import confetti from 'canvas-confetti';
+import { updateOrderStatusAndGenerateLabel } from '../../../store/slices/orderSlice';
+import { AppDispatch } from '../../../store/store';
 
 interface PaymentModalProps {
   amount: number;
