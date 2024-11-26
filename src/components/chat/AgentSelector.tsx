@@ -1,6 +1,5 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useTranslation } from 'react-i18next';
 import { Agent } from '../../types/agents';
 
 interface AgentSelectorProps {
