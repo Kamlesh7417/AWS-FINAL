@@ -1,10 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-interface OrdersHeaderProps {
-}
-
-const OrdersHeader: React.FC<OrdersHeaderProps> = ({ onRefresh }) => {
+const OrdersHeader: React.FC = () => {
   return (
     <div className="flex items-center justify-between">
       <motion.h1 
