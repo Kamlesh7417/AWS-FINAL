@@ -4,7 +4,7 @@ import { Sparkles } from 'lucide-react';
 
 interface AIAssistantProps {
   loading: boolean;
-  suggestions: any;
+  suggestions: Record<string, string> | null; // Explicitly typing suggestions as a record
   error?: string | null;
   onApply: () => void;
 }
@@ -15,6 +15,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
   error,
   onApply,
 }) => {
+  // Render loading state
   if (loading) {
     return (
       <motion.div
@@ -28,6 +29,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
     );
   }
 
+  // Render error state
   if (error) {
     return (
       <div className="bg-red-50 rounded-lg p-4">
@@ -36,10 +38,12 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
     );
   }
 
-  if (!suggestions) {
+  // If no suggestions are available, render nothing
+  if (!suggestions || Object.keys(suggestions).length === 0) {
     return null;
   }
 
+  // Render suggestions
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
