@@ -18,7 +18,8 @@ export interface OrderResponse {
 }
 
 const api = axios.create({
-    baseURL: '/api'
+    baseURL: process.env.https://bi5e25o5we.execute-api.us-east-1.amazonaws.com/dev/compliance ||'/api',
+    timeout: 10000,
 });
 
 export const fetchOrders = async (): Promise<OrderResponse[]> => {
