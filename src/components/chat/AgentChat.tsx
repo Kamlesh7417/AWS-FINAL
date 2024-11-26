@@ -53,7 +53,7 @@ const AgentChat: React.FC<AgentChatProps> = ({
     try {
       if (agent.id === 'doc-agent') {
         const response = await axios.post(
-         `${baseURL}/compliance`,
+         'https://bi5e25o5we.execute-api.us-east-1.amazonaws.com/dev/compliance',
           { user_input: messageText, language: 'en' },
           {
             timeout: 10000,
