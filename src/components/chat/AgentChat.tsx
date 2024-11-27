@@ -33,115 +33,117 @@ const AgentChat: React.FC<AgentChatProps> = ({
     scrollToBottom();
   }, [messages]);
 
-  const handleSend = async (retrying: boolean = false) => {
-    if ((!newMessage.trim() && !retrying) || loading) return;
+const handleSend = async (retrying: boolean = false) => {
+  if ((!newMessage.trim() && !retrying) || loading) return;
 
-    const messageText = retrying ? messages[messages.length - 2].content : newMessage;
-    if (!retrying) {
-      const userMessage: AgentMessage = {
-        id: Date.now().toString(),
-        agentId: 'user',
-        content: messageText,
+  const messageText = retrying ? messages[messages.length - 2].content : newMessage;
+  if (!retrying) {
+    const userMessage: AgentMessage = {
+      id: Date.now().toString(),
+      agentId: 'user',
+      content: messageText,
+      timestamp: new Date().toISOString(),
+      type: 'text',
+    };
+    setMessages((prev) => [...prev, userMessage]);
+    setNewMessage('');
+    onSendMessage?.(messageText); // Trigger external onSendMessage if provided
+  }
+
+  setLoading(true);
+
+  try {
+    if (agent.id === 'doc-agent') {
+      const response = await axios.post(
+        'https://bi5e25o5we.execute-api.us-east-1.amazonaws.com/dev/compliance',
+        { user_input: messageText, language: 'en' },
+        {
+          timeout: 30000,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      setRetryCount(0);
+
+      const responseData = response.data;
+      const aiResponse =
+        typeof responseData === 'string'
+          ? responseData
+          : responseData.message ||
+            responseData.response ||
+            "I've analyzed your request. How else can I help?";
+
+      const aiMessage: AgentMessage = {
+        id: `${Date.now()}-ai`,
+        agentId: agent.id,
+        content: aiResponse,
+        timestamp: new Date().toISOString(),
+        type: 'text',
+        metadata: responseData.suggestions
+          ? {
+              suggestions: Array.isArray(responseData.suggestions)
+                ? responseData.suggestions.map(String)
+                : [],
+            }
+          : undefined,
+      };
+
+      setMessages((prev) => [...prev, aiMessage]);
+    } else {
+      const aiMessage: AgentMessage = {
+        id: `${Date.now()}-ai`,
+        agentId: agent.id,
+        content: "I understand your request. How can I assist you further?",
         timestamp: new Date().toISOString(),
         type: 'text',
       };
-      setMessages((prev) => [...prev, userMessage]);
-      setNewMessage('');
-      onSendMessage?.(messageText); // Trigger external onSendMessage if provided
+
+      setMessages((prev) => [...prev, aiMessage]);
     }
+  } catch (error) {
+    const isNetworkError =
+      axios.isAxiosError(error) &&
+      (error.code === 'ECONNABORTED' || !error.response || error.response.status >= 500);
 
-    setLoading(true);
+    const canRetry = retryCount < 5 && isNetworkError;
 
-    try {
-      if (agent.id === 'doc-agent') {
-        const response = await axios.post(
-         'https://bi5e25o5we.execute-api.us-east-1.amazonaws.com/dev/compliance',
-          { user_input: messageText, language: 'en' },
-          {
-            timeout: 30000,
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          }
-        );
-
-        setRetryCount(0);
-
-        const responseData = response.data;
-        const aiResponse =
-          typeof responseData === 'string'
-            ? responseData
-            : responseData.message ||
-              responseData.response ||
-              "I've analyzed your request. How else can I help?";
-
-        const aiMessage: AgentMessage = {
-          id: `${Date.now()}-ai`,
-          agentId: agent.id,
-          content: aiResponse,
-          timestamp: new Date().toISOString(),
-          type: 'text',
-          metadata: responseData.suggestions
-            ? {
-                suggestions: Array.isArray(responseData.suggestions)
-                  ? responseData.suggestions.map(String)
-                  : [],
-              }
-            : undefined,
-        };
-
-        setMessages((prev) => [...prev, aiMessage]);
-      } else {
-        const aiMessage: AgentMessage = {
-          id: `${Date.now()}-ai`,
-          agentId: agent.id,
-          content: "I understand your request. How can I assist you further?",
-          timestamp: new Date().toISOString(),
-          type: 'text',
-        };
-
-        setMessages((prev) => [...prev, aiMessage]);
-      }
-    } catch (error) {
-      const isNetworkError =
-        axios.isAxiosError(error) &&
-        (error.code === 'ECONNABORTED' || !error.response || error.response.status >= 500);
-
-      const canRetry = retryCount < 5 && isNetworkError;
-
-      const errorMessage: AgentMessage = {
-        id: `${Date.now()}-error`,
-        agentId: agent.id,
-        content: canRetry
-          ? "I'm having trouble connecting. Would you like me to try again?"
-          : "I apologize, but I'm experiencing technical difficulties. Please try again later.",
-        timestamp: new Date().toISOString(),
-        type: 'alert',
-        metadata: {
-          alert: {
-            type: 'error',
-            title: 'Connection Error',
-          },
-          actions: canRetry
-            ? [
-                {
-                  label: 'Retry',
-                  value: 'retry',
-                },
-              ]
-            : undefined,
+    const errorMessage: AgentMessage = {
+      id: `${Date.now()}-error`,
+      agentId: agent.id,
+      content: canRetry
+        ? "I'm having trouble connecting. Would you like me to try again?"
+        : "I apologize, but I'm experiencing technical difficulties. Please try again later.",
+      timestamp: new Date().toISOString(),
+      type: 'alert',
+      metadata: {
+        alert: {
+          type: 'error',
+          title: 'Connection Error',
         },
-      };
+        actions: canRetry
+          ? [
+              {
+                label: 'Retry',
+                value: 'retry',
+              },
+            ]
+          : undefined,
+      },
+    };
 
-      setMessages((prev) => [...prev, errorMessage]);
+    setMessages((prev) => [...prev, errorMessage]);
 
-      if (canRetry) {
-        setRetryCount((prev) => prev + 1);
-      }
-    } finally {
-      setLoading(false);
+    if (canRetry) {
+      setRetryCount((prev) => prev + 1);
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Delay for 1 second before retrying
+      handleSend(true); // Retry the request
     }
-  };
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleAction = (action: string) => {
     if (action === 'retry') {
@@ -155,9 +157,9 @@ const AgentChat: React.FC<AgentChatProps> = ({
       return (
         <div className="space-y-2">
           <ReactMarkdown
-            className="text-sm text-gray-800 prose"
+            className="text-sm text-gray-800 prose prose-a:text-blue-600 prose-a:underline hover:prose-a:text-blue-800"
             remarkPlugins={[remarkGfm]}
-            linkTarget="_blank"
+            linkTarget="_blank" // Ensures links open in a new tab
           >
             {message.content}
           </ReactMarkdown>
@@ -180,7 +182,7 @@ const AgentChat: React.FC<AgentChatProps> = ({
       return (
         <div className="space-y-2">
           <ReactMarkdown
-            className="text-sm text-gray-800 prose"
+            className="text-sm text-gray-800 prose prose-a:text-blue-600 prose-a:underline hover:prose-a:text-blue-800"
             remarkPlugins={[remarkGfm]}
             linkTarget="_blank"
           >
@@ -218,7 +220,7 @@ const AgentChat: React.FC<AgentChatProps> = ({
             <h4 className="font-medium mb-1">{message.metadata.alert.title}</h4>
           )}
           <ReactMarkdown
-            className="text-sm"
+            className="text-sm prose prose-a:text-blue-600 prose-a:underline hover:prose-a:text-blue-800"
             remarkPlugins={[remarkGfm]}
             linkTarget="_blank"
           >
@@ -242,7 +244,7 @@ const AgentChat: React.FC<AgentChatProps> = ({
     default:
       return (
         <ReactMarkdown
-          className="text-sm text-gray-800 prose"
+          className="text-sm text-gray-800 prose prose-a:text-blue-600 prose-a:underline hover:prose-a:text-blue-800"
           remarkPlugins={[remarkGfm]}
           linkTarget="_blank"
         >
@@ -251,6 +253,7 @@ const AgentChat: React.FC<AgentChatProps> = ({
       );
   }
 };
+
 
   return (
     <div className={`flex flex-col h-full bg-white rounded-lg shadow-sm ${className}`}>
