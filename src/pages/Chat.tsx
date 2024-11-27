@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { agents } from '../data/agents';
@@ -6,14 +6,22 @@ import { recentActivities } from '../data/mockActivities';
 import AgentSelector from '../components/chat/AgentSelector';
 import AgentChat from '../components/chat/AgentChat';
 import AgentActivity from '../components/chat/AgentActivity';
-import { Agent, AgentActivity as AgentActivityType } from '../types/agents';
+import { Agent, AgentActivity as AgentActivityType, AgentMessage } from '../types/agents';
 
 const Chat: React.FC = () => {
   const { t } = useTranslation();
-  const [selectedAgent, setSelectedAgent] = React.useState<Agent | null>(null);
-  const [filteredActivities, setFilteredActivities] = React.useState<AgentActivityType[]>([]);
 
-  React.useEffect(() => {
+  // State to manage selected agent
+  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+
+  // Centralized message storage for all agents
+  const [agentMessages, setAgentMessages] = useState<{ [agentId: string]: AgentMessage[] }>({});
+
+  // State to manage filtered activities
+  const [filteredActivities, setFilteredActivities] = useState<AgentActivityType[]>([]);
+
+  // Filter activities based on the selected agent
+  useEffect(() => {
     if (selectedAgent) {
       setFilteredActivities(
         recentActivities.filter((activity) => activity.agentId === selectedAgent.id)
@@ -23,8 +31,34 @@ const Chat: React.FC = () => {
     }
   }, [selectedAgent]);
 
+  // Function to handle sending a new message
   const handleSendMessage = (message: string) => {
-    console.log(`Message sent to ${selectedAgent?.name}:`, message);
+    if (!selectedAgent) return;
+
+    // Create a new user message
+    const newMessage: AgentMessage = {
+      id: Date.now().toString(),
+      agentId: 'user',
+      content: message,
+      timestamp: new Date().toISOString(),
+      type: 'text',
+    };
+
+    // Append the new message to the specific agent's chat
+    setAgentMessages((prevMessages) => ({
+      ...prevMessages,
+      [selectedAgent.id]: [...(prevMessages[selectedAgent.id] || []), newMessage],
+    }));
+  };
+
+  // Function to update messages for the selected agent with responses from the backend
+  const updateAgentMessages = (newMessages: AgentMessage[]) => {
+    if (!selectedAgent) return;
+
+    setAgentMessages((prevMessages) => ({
+      ...prevMessages,
+      [selectedAgent.id]: [...(prevMessages[selectedAgent.id] || []), ...newMessages],
+    }));
   };
 
   return (
@@ -56,8 +90,9 @@ const Chat: React.FC = () => {
           {selectedAgent ? (
             <AgentChat
               agent={selectedAgent}
-              messages={[]}
+              messages={agentMessages[selectedAgent.id] || []}
               onSendMessage={handleSendMessage}
+              updateMessages={updateAgentMessages} // Pass the update function to update messages
             />
           ) : (
             <div className="h-full glass-card flex items-center justify-center">
