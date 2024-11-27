@@ -25,7 +25,6 @@ const AgentChat: React.FC<AgentChatProps> = ({
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Scroll to the bottom when messages change
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -37,13 +36,11 @@ const AgentChat: React.FC<AgentChatProps> = ({
   const handleSend = async () => {
     if (!newMessage.trim() || loading) return;
 
-    // Send the user message
-    onSendMessage?.(newMessage);
+    onSendMessage?.(newMessage); // Send the user message to parent
 
     setLoading(true);
 
     try {
-      // Call appropriate API based on the agent
       const apiEndpoint =
         agent.id === 'doc-agent'
           ? 'https://bi5e25o5we.execute-api.us-east-1.amazonaws.com/dev/compliance'
@@ -67,8 +64,7 @@ const AgentChat: React.FC<AgentChatProps> = ({
           type: 'text',
         };
 
-        // Update messages via parent callback
-        updateMessages?.([aiResponse]);
+        updateMessages?.([aiResponse]); // Update messages with the AI response
       }
     } catch (error) {
       console.error('Error sending message:', error);
@@ -121,38 +117,40 @@ const AgentChat: React.FC<AgentChatProps> = ({
         </AnimatePresence>
         <div ref={messagesEndRef} />
       </div>
-        <div className="p-4 border-t">
-        <div className="flex items-center space-x-2">
-          <button className="p-2 text-gray-600 hover:text-primary-600 rounded-full hover:bg-gray-100">
-            <Paperclip className="h-5 w-5" />
-          </button>
-          <input
-            type="text"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Type your message..."
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-            disabled={loading}
-          />
-          <motion.button
-            whileHover={{ scale: loading ? 1 : 1.05 }}
-            whileTap={{ scale: loading ? 1 : 0.95 }}
-            onClick={handleSend}
-            disabled={loading}
-            className="p-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? (
-              <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
-            ) : (
-              <Send className="h-5 w-5" />
-            )}
-          </motion.button>
-        </div>
+
+      <div className="p-4 border-t">
+       
+      <div className="flex items-center space-x-2">
+        <button className="p-2 text-gray-600 hover:text-primary-600 rounded-full hover:bg-gray-100">
+          <Paperclip className="h-5 w-5" />
+        </button>
+        <input
+          type="text"
+          value={newMessage}
+          onChange={(e) => setNewMessage(e.target.value)}
+          placeholder="Type your message..."
+          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+          disabled={loading}
+        />
+        <motion.button
+          whileHover={{ scale: loading ? 1 : 1.05 }}
+          whileTap={{ scale: loading ? 1 : 0.95 }}
+          onClick={handleSend}
+          disabled={loading}
+          className="p-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {loading ? (
+            <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
+          ) : (
+            <Send className="h-5 w-5" />
+          )}
+        </motion.button>
       </div>
     </div>
+  </div>
+</div>
   );
 };
 
 export default AgentChat;
-
