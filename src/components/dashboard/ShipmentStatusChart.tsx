@@ -22,7 +22,7 @@ const ShipmentStatusChart: React.FC = () => {
       'Cancelled'
     ],
     datasets: [{
-      data: [15, 25, 45, 15],
+      data: [0, 30, 30, 0],
       backgroundColor: [
         '#fbbf24',
         '#60a5fa',
