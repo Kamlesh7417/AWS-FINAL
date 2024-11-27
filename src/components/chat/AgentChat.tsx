@@ -56,7 +56,7 @@ const AgentChat: React.FC<AgentChatProps> = ({
          'https://bi5e25o5we.execute-api.us-east-1.amazonaws.com/dev/compliance',
           { user_input: messageText, language: 'en' },
           {
-            timeout: 30000,
+            timeout: 60000,
             headers: {
               'Content-Type': 'application/json',
             },
