@@ -10,8 +10,8 @@ interface AgentChatProps {
   agent: Agent;
   messages: AgentMessage[];
   className?: string;
-  onSendMessage?: (message: string) => void; // Handle new user messages
-  updateMessages?: (newMessages: AgentMessage[]) => void; // Update messages with responses
+  onSendMessage?: (message: string) => void; // Callback to handle sending user messages
+  updateMessages?: (newMessages: AgentMessage[]) => void; // Callback to update messages from backend
 }
 
 const AgentChat: React.FC<AgentChatProps> = ({
@@ -25,6 +25,7 @@ const AgentChat: React.FC<AgentChatProps> = ({
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Automatically scroll to the latest message
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -36,11 +37,13 @@ const AgentChat: React.FC<AgentChatProps> = ({
   const handleSend = async () => {
     if (!newMessage.trim() || loading) return;
 
-    onSendMessage?.(newMessage); // Send the user message to parent
+    // Notify parent component of new user message
+    onSendMessage?.(newMessage);
 
     setLoading(true);
 
     try {
+      // Determine the correct API endpoint based on the agent ID
       const apiEndpoint =
         agent.id === 'doc-agent'
           ? 'https://bi5e25o5we.execute-api.us-east-1.amazonaws.com/dev/compliance'
@@ -64,7 +67,8 @@ const AgentChat: React.FC<AgentChatProps> = ({
           type: 'text',
         };
 
-        updateMessages?.([aiResponse]); // Update messages with the AI response
+        // Update messages via parent callback
+        updateMessages?.([aiResponse]);
       }
     } catch (error) {
       console.error('Error sending message:', error);
@@ -74,8 +78,38 @@ const AgentChat: React.FC<AgentChatProps> = ({
     }
   };
 
+  const renderMessage = (message: AgentMessage) => {
+    return (
+      <motion.div
+        key={message.id}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        className={`flex ${message.agentId === agent.id ? 'justify-start' : 'justify-end'}`}
+      >
+        <div
+          className={`max-w-[80%] rounded-lg p-3 ${
+            message.agentId === agent.id ? 'bg-gray-100' : 'bg-primary-600 text-white'
+          }`}
+        >
+          <ReactMarkdown
+            className="text-sm text-gray-800 prose prose-a:text-blue-600 prose-a:underline hover:prose-a:text-blue-800"
+            remarkPlugins={[remarkGfm]}
+            linkTarget="_blank"
+          >
+            {message.content}
+          </ReactMarkdown>
+          <span className="text-xs opacity-75 mt-1 block">
+            {new Date(message.timestamp).toLocaleTimeString()}
+          </span>
+        </div>
+      </motion.div>
+    );
+  };
+
   return (
     <div className={`flex flex-col h-full bg-white rounded-lg shadow-sm ${className}`}>
+      {/* Agent Header */}
       <div className="p-4 border-b">
         <div className="flex items-center space-x-3">
           <img src={agent.avatar} alt={agent.name} className="w-10 h-10 rounded-full" />
@@ -86,70 +120,45 @@ const AgentChat: React.FC<AgentChatProps> = ({
         </div>
       </div>
 
+      {/* Message Container */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         <AnimatePresence>
-          {messages.map((message) => (
-            <motion.div
-              key={message.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className={`flex ${message.agentId === agent.id ? 'justify-start' : 'justify-end'}`}
-            >
-              <div
-                className={`max-w-[80%] rounded-lg p-3 ${
-                  message.agentId === agent.id ? 'bg-gray-100' : 'bg-primary-600 text-white'
-                }`}
-              >
-                <ReactMarkdown
-                  className="text-sm text-gray-800 prose prose-a:text-blue-600 prose-a:underline hover:prose-a:text-blue-800"
-                  remarkPlugins={[remarkGfm]}
-                  linkTarget="_blank"
-                >
-                  {message.content}
-                </ReactMarkdown>
-                <span className="text-xs opacity-75 mt-1 block">
-                  {new Date(message.timestamp).toLocaleTimeString()}
-                </span>
-              </div>
-            </motion.div>
-          ))}
+          {messages.map(renderMessage)}
         </AnimatePresence>
         <div ref={messagesEndRef} />
       </div>
 
+      {/* Message Input */}
       <div className="p-4 border-t">
-       
-      <div className="flex items-center space-x-2">
-        <button className="p-2 text-gray-600 hover:text-primary-600 rounded-full hover:bg-gray-100">
-          <Paperclip className="h-5 w-5" />
-        </button>
-        <input
-          type="text"
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Type your message..."
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-          disabled={loading}
-        />
-        <motion.button
-          whileHover={{ scale: loading ? 1 : 1.05 }}
-          whileTap={{ scale: loading ? 1 : 0.95 }}
-          onClick={handleSend}
-          disabled={loading}
-          className="p-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {loading ? (
-            <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
-          ) : (
-            <Send className="h-5 w-5" />
-          )}
-        </motion.button>
+        <div className="flex items-center space-x-2">
+          <button className="p-2 text-gray-600 hover:text-primary-600 rounded-full hover:bg-gray-100">
+            <Paperclip className="h-5 w-5" />
+          </button>
+          <input
+            type="text"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Type your message..."
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+            disabled={loading}
+          />
+          <motion.button
+            whileHover={{ scale: loading ? 1 : 1.05 }}
+            whileTap={{ scale: loading ? 1 : 0.95 }}
+            onClick={handleSend}
+            disabled={loading}
+            className="p-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? (
+              <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
+            ) : (
+              <Send className="h-5 w-5" />
+            )}
+          </motion.button>
+        </div>
       </div>
     </div>
-  </div>
-</div>
   );
 };
 
