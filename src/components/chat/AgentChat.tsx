@@ -55,9 +55,17 @@ const AgentChat: React.FC<AgentChatProps> = ({
     setIsRetrying(false); // Reset retry flag when making a fresh request
 
     try {
+      let apiEndpoint = '';
       if (agent.id === 'doc-agent') {
+      apiEndpoint = 'https://bi5e25o5we.execute-api.us-east-1.amazonaws.com/dev/compliance';
+    } else if (agent.id === 'track-agent') {
+      apiEndpoint = 'https://zskbswe676.execute-api.us-east-1.amazonaws.com/default/Tracking-Agent';
+    } else if (agent.id === 'negotiate-agent') {
+      apiEndpoint = 'https://zskbswe676.execute-api.us-east-1.amazonaws.com/default/Tracking-Agent';
+    }
+      if (apiEndpoint) {
         const response = await axios.post(
-          'https://bi5e25o5we.execute-api.us-east-1.amazonaws.com/dev/compliance',
+          apiEndpoint,
           { user_input: messageText, language: 'en' },
           {
             timeout: 30000,
@@ -93,17 +101,7 @@ const AgentChat: React.FC<AgentChatProps> = ({
         };
 
         setMessages((prev) => [...prev, aiMessage]);
-      } else {
-        const aiMessage: AgentMessage = {
-          id: `${Date.now()}-ai`,
-          agentId: agent.id,
-          content: "I understand your request. How can I assist you further?",
-          timestamp: new Date().toISOString(),
-          type: 'text',
-        };
-
-        setMessages((prev) => [...prev, aiMessage]);
-      }
+      } 
     } catch (error) {
       const isNetworkError =
         axios.isAxiosError(error) &&
@@ -329,4 +327,3 @@ const AgentChat: React.FC<AgentChatProps> = ({
 };
 
 export default AgentChat;
-
