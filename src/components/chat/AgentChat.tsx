@@ -10,22 +10,22 @@ interface AgentChatProps {
   agent: Agent;
   messages: AgentMessage[];
   className?: string;
-  onSendMessage?: (message: string) => void; // Added this prop
+  onSendMessage?: (message: string) => void; // Handle new user messages
+  updateMessages?: (newMessages: AgentMessage[]) => void; // Update messages with responses
 }
 
 const AgentChat: React.FC<AgentChatProps> = ({
   agent,
-  messages: initialMessages,
+  messages,
   className = '',
-  onSendMessage, // Allowing external message handling
+  onSendMessage,
+  updateMessages,
 }) => {
-  const [messages, setMessages] = useState<AgentMessage[]>(initialMessages);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
-  const [isRetrying, setIsRetrying] = useState(false); // To handle user-triggered retries
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Scroll to the bottom when messages change
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -34,224 +34,47 @@ const AgentChat: React.FC<AgentChatProps> = ({
     scrollToBottom();
   }, [messages]);
 
-  const handleSend = async (retrying: boolean = false) => {
-    if ((!newMessage.trim() && !retrying) || loading) return;
+  const handleSend = async () => {
+    if (!newMessage.trim() || loading) return;
 
-    const messageText = retrying ? messages[messages.length - 2].content : newMessage;
-    if (!retrying) {
-      const userMessage: AgentMessage = {
-        id: Date.now().toString(),
-        agentId: 'user',
-        content: messageText,
-        timestamp: new Date().toISOString(),
-        type: 'text',
-      };
-      setMessages((prev) => [...prev, userMessage]);
-      setNewMessage('');
-      onSendMessage?.(messageText); // Trigger external onSendMessage if provided
-    }
+    // Send the user message
+    onSendMessage?.(newMessage);
 
     setLoading(true);
-    setIsRetrying(false); // Reset retry flag when making a fresh request
 
     try {
-      let apiEndpoint = '';
-      if (agent.id === 'doc-agent') {
-      apiEndpoint = 'https://bi5e25o5we.execute-api.us-east-1.amazonaws.com/dev/compliance';
-    } else if (agent.id === 'tracking-agent') {
-      apiEndpoint = 'https://zskbswe676.execute-api.us-east-1.amazonaws.com/default/Tracking-Agent';
-    } else if (agent.id === 'negotiator-agent') {
-      apiEndpoint = 'https://zskbswe676.execute-api.us-east-1.amazonaws.com/default/Tracking-Agent';
-    }
+      // Call appropriate API based on the agent
+      const apiEndpoint =
+        agent.id === 'doc-agent'
+          ? 'https://bi5e25o5we.execute-api.us-east-1.amazonaws.com/dev/compliance'
+          : agent.id === 'tracking-agent'
+          ? 'https://zskbswe676.execute-api.us-east-1.amazonaws.com/default/Tracking-Agent'
+          : agent.id === 'negotiator-agent'
+          ? 'https://zskbswe676.execute-api.us-east-1.amazonaws.com/default/Negotiation-Agent'
+          : '';
+
       if (apiEndpoint) {
-        const response = await axios.post(
-          apiEndpoint,
-          { user_input: messageText, language: 'en' },
-          {
-            timeout: 30000,
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          }
-        );
+        const response = await axios.post(apiEndpoint, {
+          user_input: newMessage,
+          language: 'en',
+        });
 
-        setRetryCount(0);
-
-        const responseData = response.data;
-        const aiResponse =
-          typeof responseData === 'string'
-            ? responseData
-            : responseData.message ||
-              responseData.response ||
-              "I've analyzed your request. How else can I help?";
-
-        const aiMessage: AgentMessage = {
+        const aiResponse: AgentMessage = {
           id: `${Date.now()}-ai`,
           agentId: agent.id,
-          content: aiResponse,
+          content: response.data.message || 'No response available',
           timestamp: new Date().toISOString(),
           type: 'text',
-          metadata: responseData.suggestions
-            ? {
-                suggestions: Array.isArray(responseData.suggestions)
-                  ? responseData.suggestions.map(String)
-                  : [],
-              }
-            : undefined,
         };
 
-        setMessages((prev) => [...prev, aiMessage]);
-      } 
-    } catch (error) {
-      const isNetworkError =
-        axios.isAxiosError(error) &&
-        (error.code === 'ECONNABORTED' || !error.response || error.response.status >= 500);
-
-      const canRetry = retryCount < 5 && isNetworkError;
-
-      const errorMessage: AgentMessage = {
-        id: `${Date.now()}-error`,
-        agentId: agent.id,
-        content: canRetry
-          ? "I'm having trouble connecting. Would you like me to try again?"
-          : "I apologize, but I'm experiencing technical difficulties. Please try again later.",
-        timestamp: new Date().toISOString(),
-        type: 'alert',
-        metadata: {
-          alert: {
-            type: 'error',
-            title: 'Connection Error',
-          },
-          actions: canRetry
-            ? [
-                {
-                  label: 'Retry',
-                  value: 'retry',
-                },
-              ]
-            : undefined,
-        },
-      };
-
-      setMessages((prev) => [...prev, errorMessage]);
-
-      if (canRetry && retrying) {
-        setRetryCount((prev) => prev + 1);
-        await new Promise((resolve) => setTimeout(resolve, 1000)); // Delay for 1 second before retrying
-        handleSend(true); // Retry the request
+        // Update messages via parent callback
+        updateMessages?.([aiResponse]);
       }
+    } catch (error) {
+      console.error('Error sending message:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleAction = (action: string) => {
-    if (action === 'retry' && !isRetrying) {
-      setIsRetrying(true); // Ensure retry is only triggered by user action
-      handleSend(true);
-    }
-  };
-
-  const renderMessage = (message: AgentMessage) => {
-    switch (message.type) {
-      case 'suggestion':
-        return (
-          <div className="space-y-2">
-            <ReactMarkdown
-              className="text-sm text-gray-800 prose prose-a:text-blue-600 prose-a:underline hover:prose-a:text-blue-800"
-              remarkPlugins={[remarkGfm]}
-              linkTarget="_blank" // Ensures links open in a new tab
-            >
-              {message.content}
-            </ReactMarkdown>
-            {message.metadata?.suggestions && (
-              <div className="flex flex-wrap gap-2">
-                {message.metadata.suggestions.map((suggestion, index) => (
-                  <button
-                    key={index}
-                    className="px-3 py-1 text-sm bg-primary-100 text-primary-700 rounded-full hover:bg-primary-200"
-                    onClick={() => setNewMessage(suggestion)}
-                  >
-                    {suggestion}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        );
-      case 'action':
-        return (
-          <div className="space-y-2">
-            <ReactMarkdown
-              className="text-sm text-gray-800 prose prose-a:text-blue-600 prose-a:underline hover:prose-a:text-blue-800"
-              remarkPlugins={[remarkGfm]}
-              linkTarget="_blank"
-            >
-              {message.content}
-            </ReactMarkdown>
-            {message.metadata?.actions && (
-              <div className="flex flex-wrap gap-2">
-                {message.metadata.actions.map((action, index) => (
-                  <button
-                    key={index}
-                    className="px-3 py-1 text-sm bg-primary-600 text-white rounded-full hover:bg-primary-700"
-                    onClick={() => handleAction(action.value)}
-                  >
-                    {action.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        );
-      case 'alert':
-        return (
-          <div
-            className={`p-3 rounded-lg ${
-              message.metadata?.alert?.type === 'warning'
-                ? 'bg-yellow-50 text-yellow-800'
-                : message.metadata?.alert?.type === 'error'
-                ? 'bg-red-50 text-red-800'
-                : message.metadata?.alert?.type === 'success'
-                ? 'bg-green-50 text-green-800'
-                : 'bg-blue-50 text-blue-800'
-            }`}
-          >
-            {message.metadata?.alert?.title && (
-              <h4 className="font-medium mb-1">{message.metadata.alert.title}</h4>
-            )}
-            <ReactMarkdown
-              className="text-sm prose prose-a:text-blue-600 prose-a:underline hover:prose-a:text-blue-800"
-              remarkPlugins={[remarkGfm]}
-              linkTarget="_blank"
-            >
-              {message.content}
-            </ReactMarkdown>
-            {message.metadata?.actions && (
-              <div className="flex flex-wrap gap-2 mt-2">
-                {message.metadata.actions.map((action, index) => (
-                  <button
-                    key={index}
-                    className="px-3 py-1 text-sm bg-white text-primary-600 rounded-full hover:bg-primary-50 border border-current"
-                    onClick={() => handleAction(action.value)}
-                  >
-                    {action.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        );
-      default:
-        return (
-          <ReactMarkdown
-            className="text-sm text-gray-800 prose prose-a:text-blue-600 prose-a:underline hover:prose-a:text-blue-800"
-            remarkPlugins={[remarkGfm]}
-            linkTarget="_blank"
-          >
-            {message.content}
-          </ReactMarkdown>
-        );
+      setNewMessage('');
     }
   };
 
@@ -282,7 +105,13 @@ const AgentChat: React.FC<AgentChatProps> = ({
                   message.agentId === agent.id ? 'bg-gray-100' : 'bg-primary-600 text-white'
                 }`}
               >
-                {renderMessage(message)}
+                <ReactMarkdown
+                  className="text-sm text-gray-800 prose prose-a:text-blue-600 prose-a:underline hover:prose-a:text-blue-800"
+                  remarkPlugins={[remarkGfm]}
+                  linkTarget="_blank"
+                >
+                  {message.content}
+                </ReactMarkdown>
                 <span className="text-xs opacity-75 mt-1 block">
                   {new Date(message.timestamp).toLocaleTimeString()}
                 </span>
@@ -292,8 +121,7 @@ const AgentChat: React.FC<AgentChatProps> = ({
         </AnimatePresence>
         <div ref={messagesEndRef} />
       </div>
-
-      <div className="p-4 border-t">
+        <div className="p-4 border-t">
         <div className="flex items-center space-x-2">
           <button className="p-2 text-gray-600 hover:text-primary-600 rounded-full hover:bg-gray-100">
             <Paperclip className="h-5 w-5" />
@@ -304,13 +132,13 @@ const AgentChat: React.FC<AgentChatProps> = ({
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Type your message..."
             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-            onKeyPress={(e) => e.key === 'Enter' && handleSend(false)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
             disabled={loading}
           />
           <motion.button
             whileHover={{ scale: loading ? 1 : 1.05 }}
             whileTap={{ scale: loading ? 1 : 0.95 }}
-            onClick={() => handleSend(false)}
+            onClick={handleSend}
             disabled={loading}
             className="p-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -327,3 +155,4 @@ const AgentChat: React.FC<AgentChatProps> = ({
 };
 
 export default AgentChat;
+
