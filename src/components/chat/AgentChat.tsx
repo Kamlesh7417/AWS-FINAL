@@ -57,17 +57,17 @@ const AgentChat: React.FC<AgentChatProps> = ({
         const response = await axios.post(apiEndpoint, {
           user_input: newMessage,
           language: 'en',
-        },{
-            timeout: 40000,
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          });
+        }, {
+          timeout: 40000,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
 
         const aiResponse: AgentMessage = {
           id: `${Date.now()}-ai`,
           agentId: agent.id,
-          content: response.data.message || 'No response available',
+          content: response.data.message || response.data.response || 'No response available',
           timestamp: new Date().toISOString(),
           type: 'text',
         };
