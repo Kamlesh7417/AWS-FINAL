@@ -17,8 +17,6 @@ export interface OrderResponse {
     seller_address: string;
 }
 
-const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const baseURL = isLocal ? '/api' : 'https://bi5e25o5we.execute-api.us-east-1.amazonaws.com/dev/compliance';
 const api = axios.create({
     baseURL:'/api',
     timeout: 10000, // Set the timeout to 10 seconds
