@@ -48,9 +48,9 @@ const AgentChat: React.FC<AgentChatProps> = ({
         agent.id === 'doc-agent'
           ? 'https://bi5e25o5we.execute-api.us-east-1.amazonaws.com/dev/compliance'
           : agent.id === 'tracking-agent'
-          ? 'https://zskbswe676.execute-api.us-east-1.amazonaws.com/default/Tracking-Agent'
+          ? 'https://zskbswe676.execute-api.us-east-1.amazonaws.com/dev/Tracking-Agent'
           : agent.id === 'negotiator-agent'
-          ? 'https://zskbswe676.execute-api.us-east-1.amazonaws.com/default/Negotiation-Agent'
+          ? 'https://zskbswe676.execute-api.us-east-1.amazonaws.com/dev/Negotiation-Agent'
           : '';
 
       if (apiEndpoint) {
