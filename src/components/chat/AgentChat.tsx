@@ -50,7 +50,7 @@ const AgentChat: React.FC<AgentChatProps> = ({
           : agent.id === 'tracking-agent'
           ? 'https://zskbswe676.execute-api.us-east-1.amazonaws.com/dev/Tracking-Agent'
           : agent.id === 'negotiator-agent'
-          ? 'https://zskbswe676.execute-api.us-east-1.amazonaws.com/dev/Negotiation-Agent'
+          ? 'https://0d7xsud505.execute-api.us-east-1.amazonaws.com/dev/Negotiating-agent'
           : '';
 
       if (apiEndpoint) {
