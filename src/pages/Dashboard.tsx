@@ -12,28 +12,28 @@ const Dashboard = () => {
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <ShoppingBagIcon className="h-6 w-6 text-primary-600" />
-            <span className="text-2xl font-bold">124</span>
+            <span className="text-2xl font-bold">30</span>
           </div>
           <p className="text-gray-600 mt-2">Total Orders</p>
         </div>
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <TruckIcon className="h-6 w-6 text-primary-600" />
-            <span className="text-2xl font-bold">56</span>
+            <span className="text-2xl font-bold">30</span>
           </div>
           <p className="text-gray-600 mt-2">Total Shipments</p>
         </div>
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <CurrencyDollarIcon className="h-6 w-6 text-primary-600" />
-            <span className="text-2xl font-bold">$14,500</span>
+            <span className="text-2xl font-bold">Rs23,30,500</span>
           </div>
           <p className="text-gray-600 mt-2">Revenue</p>
         </div>
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <DocumentTextIcon className="h-6 w-6 text-primary-600" />
-            <span className="text-2xl font-bold">32</span>
+            <span className="text-2xl font-bold">0</span>
           </div>
           <p className="text-gray-600 mt-2">Pending Documents</p>
         </div>
