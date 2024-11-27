@@ -23,6 +23,7 @@ const AgentChat: React.FC<AgentChatProps> = ({
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const [isRetrying, setIsRetrying] = useState(false); // To handle user-triggered retries
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -33,154 +34,218 @@ const AgentChat: React.FC<AgentChatProps> = ({
     scrollToBottom();
   }, [messages]);
 
-const handleSend = async (retrying: boolean = false) => {
-  if ((!newMessage.trim() && !retrying) || loading) return;
+  const handleSend = async (retrying: boolean = false) => {
+    if ((!newMessage.trim() && !retrying) || loading) return;
 
-  const messageText = retrying ? messages[messages.length - 2].content : newMessage;
-  if (!retrying) {
-    const userMessage: AgentMessage = {
-      id: Date.now().toString(),
-      agentId: 'user',
-      content: messageText,
-      timestamp: new Date().toISOString(),
-      type: 'text',
-    };
-    setMessages((prev) => [...prev, userMessage]);
-    setNewMessage('');
-    onSendMessage?.(messageText); // Trigger external onSendMessage if provided
-  }
+    const messageText = retrying ? messages[messages.length - 2].content : newMessage;
+    if (!retrying) {
+      const userMessage: AgentMessage = {
+        id: Date.now().toString(),
+        agentId: 'user',
+        content: messageText,
+        timestamp: new Date().toISOString(),
+        type: 'text',
+      };
+      setMessages((prev) => [...prev, userMessage]);
+      setNewMessage('');
+      onSendMessage?.(messageText); // Trigger external onSendMessage if provided
+    }
 
-  setLoading(true);
+    setLoading(true);
+    setIsRetrying(false); // Reset retry flag when making a fresh request
 
-  try {
-    if (agent.id === 'doc-agent') {
-      const response = await axios.post(
-        'https://bi5e25o5we.execute-api.us-east-1.amazonaws.com/dev/compliance',
-        { user_input: messageText, language: 'en' },
-        {
-          timeout: 30000,
-          headers: {
-            'Content-Type': 'application/json',
+    try {
+      if (agent.id === 'doc-agent') {
+        const response = await axios.post(
+          'https://bi5e25o5we.execute-api.us-east-1.amazonaws.com/dev/compliance',
+          { user_input: messageText, language: 'en' },
+          {
+            timeout: 30000,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        setRetryCount(0);
+
+        const responseData = response.data;
+        const aiResponse =
+          typeof responseData === 'string'
+            ? responseData
+            : responseData.message ||
+              responseData.response ||
+              "I've analyzed your request. How else can I help?";
+
+        const aiMessage: AgentMessage = {
+          id: `${Date.now()}-ai`,
+          agentId: agent.id,
+          content: aiResponse,
+          timestamp: new Date().toISOString(),
+          type: 'text',
+          metadata: responseData.suggestions
+            ? {
+                suggestions: Array.isArray(responseData.suggestions)
+                  ? responseData.suggestions.map(String)
+                  : [],
+              }
+            : undefined,
+        };
+
+        setMessages((prev) => [...prev, aiMessage]);
+      } else {
+        const aiMessage: AgentMessage = {
+          id: `${Date.now()}-ai`,
+          agentId: agent.id,
+          content: "I understand your request. How can I assist you further?",
+          timestamp: new Date().toISOString(),
+          type: 'text',
+        };
+
+        setMessages((prev) => [...prev, aiMessage]);
+      }
+    } catch (error) {
+      const isNetworkError =
+        axios.isAxiosError(error) &&
+        (error.code === 'ECONNABORTED' || !error.response || error.response.status >= 500);
+
+      const canRetry = retryCount < 5 && isNetworkError;
+
+      const errorMessage: AgentMessage = {
+        id: `${Date.now()}-error`,
+        agentId: agent.id,
+        content: canRetry
+          ? "I'm having trouble connecting. Would you like me to try again?"
+          : "I apologize, but I'm experiencing technical difficulties. Please try again later.",
+        timestamp: new Date().toISOString(),
+        type: 'alert',
+        metadata: {
+          alert: {
+            type: 'error',
+            title: 'Connection Error',
           },
-        }
-      );
-
-      setRetryCount(0);
-
-      const responseData = response.data;
-      const aiResponse =
-        typeof responseData === 'string'
-          ? responseData
-          : responseData.message ||
-            responseData.response ||
-            "I've analyzed your request. How else can I help?";
-
-      const aiMessage: AgentMessage = {
-        id: `${Date.now()}-ai`,
-        agentId: agent.id,
-        content: aiResponse,
-        timestamp: new Date().toISOString(),
-        type: 'text',
-        metadata: responseData.suggestions
-          ? {
-              suggestions: Array.isArray(responseData.suggestions)
-                ? responseData.suggestions.map(String)
-                : [],
-            }
-          : undefined,
-      };
-
-      setMessages((prev) => [...prev, aiMessage]);
-    } else {
-      const aiMessage: AgentMessage = {
-        id: `${Date.now()}-ai`,
-        agentId: agent.id,
-        content: "I understand your request. How can I assist you further?",
-        timestamp: new Date().toISOString(),
-        type: 'text',
-      };
-
-      setMessages((prev) => [...prev, aiMessage]);
-    }
-  } catch (error) {
-    const isNetworkError =
-      axios.isAxiosError(error) &&
-      (error.code === 'ECONNABORTED' || !error.response || error.response.status >= 500);
-
-    const canRetry = retryCount < 5 && isNetworkError;
-
-    const errorMessage: AgentMessage = {
-      id: `${Date.now()}-error`,
-      agentId: agent.id,
-      content: canRetry
-        ? "I'm having trouble connecting. Would you like me to try again?"
-        : "I apologize, but I'm experiencing technical difficulties. Please try again later.",
-      timestamp: new Date().toISOString(),
-      type: 'alert',
-      metadata: {
-        alert: {
-          type: 'error',
-          title: 'Connection Error',
+          actions: canRetry
+            ? [
+                {
+                  label: 'Retry',
+                  value: 'retry',
+                },
+              ]
+            : undefined,
         },
-        actions: canRetry
-          ? [
-              {
-                label: 'Retry',
-                value: 'retry',
-              },
-            ]
-          : undefined,
-      },
-    };
+      };
 
-    setMessages((prev) => [...prev, errorMessage]);
+      setMessages((prev) => [...prev, errorMessage]);
 
-    if (canRetry) {
-      setRetryCount((prev) => prev + 1);
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Delay for 1 second before retrying
-      handleSend(true); // Retry the request
+      if (canRetry && retrying) {
+        setRetryCount((prev) => prev + 1);
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // Delay for 1 second before retrying
+        handleSend(true); // Retry the request
+      }
+    } finally {
+      setLoading(false);
     }
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const handleAction = (action: string) => {
-    if (action === 'retry') {
+    if (action === 'retry' && !isRetrying) {
+      setIsRetrying(true); // Ensure retry is only triggered by user action
       handleSend(true);
     }
   };
 
   const renderMessage = (message: AgentMessage) => {
-  switch (message.type) {
-    case 'suggestion':
-      return (
-        <div className="space-y-2">
-          <ReactMarkdown
-            className="text-sm text-gray-800 prose prose-a:text-blue-600 prose-a:underline hover:prose-a:text-blue-800"
-            remarkPlugins={[remarkGfm]}
-            linkTarget="_blank" // Ensures links open in a new tab
+    switch (message.type) {
+      case 'suggestion':
+        return (
+          <div className="space-y-2">
+            <ReactMarkdown
+              className="text-sm text-gray-800 prose prose-a:text-blue-600 prose-a:underline hover:prose-a:text-blue-800"
+              remarkPlugins={[remarkGfm]}
+              linkTarget="_blank" // Ensures links open in a new tab
+            >
+              {message.content}
+            </ReactMarkdown>
+            {message.metadata?.suggestions && (
+              <div className="flex flex-wrap gap-2">
+                {message.metadata.suggestions.map((suggestion, index) => (
+                  <button
+                    key={index}
+                    className="px-3 py-1 text-sm bg-primary-100 text-primary-700 rounded-full hover:bg-primary-200"
+                    onClick={() => setNewMessage(suggestion)}
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      case 'action':
+        return (
+          <div className="space-y-2">
+            <ReactMarkdown
+              className="text-sm text-gray-800 prose prose-a:text-blue-600 prose-a:underline hover:prose-a:text-blue-800"
+              remarkPlugins={[remarkGfm]}
+              linkTarget="_blank"
+            >
+              {message.content}
+            </ReactMarkdown>
+            {message.metadata?.actions && (
+              <div className="flex flex-wrap gap-2">
+                {message.metadata.actions.map((action, index) => (
+                  <button
+                    key={index}
+                    className="px-3 py-1 text-sm bg-primary-600 text-white rounded-full hover:bg-primary-700"
+                    onClick={() => handleAction(action.value)}
+                  >
+                    {action.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      case 'alert':
+        return (
+          <div
+            className={`p-3 rounded-lg ${
+              message.metadata?.alert?.type === 'warning'
+                ? 'bg-yellow-50 text-yellow-800'
+                : message.metadata?.alert?.type === 'error'
+                ? 'bg-red-50 text-red-800'
+                : message.metadata?.alert?.type === 'success'
+                ? 'bg-green-50 text-green-800'
+                : 'bg-blue-50 text-blue-800'
+            }`}
           >
-            {message.content}
-          </ReactMarkdown>
-          {message.metadata?.suggestions && (
-            <div className="flex flex-wrap gap-2">
-              {message.metadata.suggestions.map((suggestion, index) => (
-                <button
-                  key={index}
-                  className="px-3 py-1 text-sm bg-primary-100 text-primary-700 rounded-full hover:bg-primary-200"
-                  onClick={() => setNewMessage(suggestion)}
-                >
-                  {suggestion}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      );
-    case 'action':
-      return (
-        <div className="space-y-2">
+            {message.metadata?.alert?.title && (
+              <h4 className="font-medium mb-1">{message.metadata.alert.title}</h4>
+            )}
+            <ReactMarkdown
+              className="text-sm prose prose-a:text-blue-600 prose-a:underline hover:prose-a:text-blue-800"
+              remarkPlugins={[remarkGfm]}
+              linkTarget="_blank"
+            >
+              {message.content}
+            </ReactMarkdown>
+            {message.metadata?.actions && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {message.metadata.actions.map((action, index) => (
+                  <button
+                    key={index}
+                    className="px-3 py-1 text-sm bg-white text-primary-600 rounded-full hover:bg-primary-50 border border-current"
+                    onClick={() => handleAction(action.value)}
+                  >
+                    {action.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      default:
+        return (
           <ReactMarkdown
             className="text-sm text-gray-800 prose prose-a:text-blue-600 prose-a:underline hover:prose-a:text-blue-800"
             remarkPlugins={[remarkGfm]}
@@ -188,72 +253,9 @@ const handleSend = async (retrying: boolean = false) => {
           >
             {message.content}
           </ReactMarkdown>
-          {message.metadata?.actions && (
-            <div className="flex flex-wrap gap-2">
-              {message.metadata.actions.map((action, index) => (
-                <button
-                  key={index}
-                  className="px-3 py-1 text-sm bg-primary-600 text-white rounded-full hover:bg-primary-700"
-                  onClick={() => handleAction(action.value)}
-                >
-                  {action.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      );
-    case 'alert':
-      return (
-        <div
-          className={`p-3 rounded-lg ${
-            message.metadata?.alert?.type === 'warning'
-              ? 'bg-yellow-50 text-yellow-800'
-              : message.metadata?.alert?.type === 'error'
-              ? 'bg-red-50 text-red-800'
-              : message.metadata?.alert?.type === 'success'
-              ? 'bg-green-50 text-green-800'
-              : 'bg-blue-50 text-blue-800'
-          }`}
-        >
-          {message.metadata?.alert?.title && (
-            <h4 className="font-medium mb-1">{message.metadata.alert.title}</h4>
-          )}
-          <ReactMarkdown
-            className="text-sm prose prose-a:text-blue-600 prose-a:underline hover:prose-a:text-blue-800"
-            remarkPlugins={[remarkGfm]}
-            linkTarget="_blank"
-          >
-            {message.content}
-          </ReactMarkdown>
-          {message.metadata?.actions && (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {message.metadata.actions.map((action, index) => (
-                <button
-                  key={index}
-                  className="px-3 py-1 text-sm bg-white text-primary-600 rounded-full hover:bg-primary-50 border border-current"
-                  onClick={() => handleAction(action.value)}
-                >
-                  {action.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      );
-    default:
-      return (
-        <ReactMarkdown
-          className="text-sm text-gray-800 prose prose-a:text-blue-600 prose-a:underline hover:prose-a:text-blue-800"
-          remarkPlugins={[remarkGfm]}
-          linkTarget="_blank"
-        >
-          {message.content}
-        </ReactMarkdown>
-      );
-  }
-};
-
+        );
+    }
+  };
 
   return (
     <div className={`flex flex-col h-full bg-white rounded-lg shadow-sm ${className}`}>
@@ -327,3 +329,4 @@ const handleSend = async (retrying: boolean = false) => {
 };
 
 export default AgentChat;
+
