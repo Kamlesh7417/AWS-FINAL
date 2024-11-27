@@ -3,6 +3,8 @@ import { Send, Paperclip } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Agent, AgentMessage } from '../../types/agents';
 import axios from 'axios';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface AgentChatProps {
   agent: Agent;
@@ -105,7 +107,7 @@ const AgentChat: React.FC<AgentChatProps> = ({
         axios.isAxiosError(error) &&
         (error.code === 'ECONNABORTED' || !error.response || error.response.status >= 500);
 
-      const canRetry = retryCount < 2 && isNetworkError;
+      const canRetry = retryCount < 5 && isNetworkError;
 
       const errorMessage: AgentMessage = {
         id: `${Date.now()}-error`,
@@ -148,81 +150,107 @@ const AgentChat: React.FC<AgentChatProps> = ({
   };
 
   const renderMessage = (message: AgentMessage) => {
-    switch (message.type) {
-      case 'suggestion':
-        return (
-          <div className="space-y-2">
-            <p className="text-sm text-gray-800">{message.content}</p>
-            {message.metadata?.suggestions && (
-              <div className="flex flex-wrap gap-2">
-                {message.metadata.suggestions.map((suggestion, index) => (
-                  <button
-                    key={index}
-                    className="px-3 py-1 text-sm bg-primary-100 text-primary-700 rounded-full hover:bg-primary-200"
-                    onClick={() => setNewMessage(suggestion)}
-                  >
-                    {suggestion}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        );
-      case 'action':
-        return (
-          <div className="space-y-2">
-            <p className="text-sm text-gray-800">{message.content}</p>
-            {message.metadata?.actions && (
-              <div className="flex flex-wrap gap-2">
-                {message.metadata.actions.map((action, index) => (
-                  <button
-                    key={index}
-                    className="px-3 py-1 text-sm bg-primary-600 text-white rounded-full hover:bg-primary-700"
-                    onClick={() => handleAction(action.value)}
-                  >
-                    {action.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        );
-      case 'alert':
-        return (
-          <div
-            className={`p-3 rounded-lg ${
-              message.metadata?.alert?.type === 'warning'
-                ? 'bg-yellow-50 text-yellow-800'
-                : message.metadata?.alert?.type === 'error'
-                ? 'bg-red-50 text-red-800'
-                : message.metadata?.alert?.type === 'success'
-                ? 'bg-green-50 text-green-800'
-                : 'bg-blue-50 text-blue-800'
-            }`}
+  switch (message.type) {
+    case 'suggestion':
+      return (
+        <div className="space-y-2">
+          <ReactMarkdown
+            className="text-sm text-gray-800 prose"
+            remarkPlugins={[remarkGfm]}
+            linkTarget="_blank"
           >
-            {message.metadata?.alert?.title && (
-              <h4 className="font-medium mb-1">{message.metadata.alert.title}</h4>
-            )}
-            <p className="text-sm">{message.content}</p>
-            {message.metadata?.actions && (
-              <div className="flex flex-wrap gap-2 mt-2">
-                {message.metadata.actions.map((action, index) => (
-                  <button
-                    key={index}
-                    className="px-3 py-1 text-sm bg-white text-primary-600 rounded-full hover:bg-primary-50 border border-current"
-                    onClick={() => handleAction(action.value)}
-                  >
-                    {action.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        );
-      default:
-        return <p className="text-sm text-gray-800">{message.content}</p>;
-    }
-  };
+            {message.content}
+          </ReactMarkdown>
+          {message.metadata?.suggestions && (
+            <div className="flex flex-wrap gap-2">
+              {message.metadata.suggestions.map((suggestion, index) => (
+                <button
+                  key={index}
+                  className="px-3 py-1 text-sm bg-primary-100 text-primary-700 rounded-full hover:bg-primary-200"
+                  onClick={() => setNewMessage(suggestion)}
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    case 'action':
+      return (
+        <div className="space-y-2">
+          <ReactMarkdown
+            className="text-sm text-gray-800 prose"
+            remarkPlugins={[remarkGfm]}
+            linkTarget="_blank"
+          >
+            {message.content}
+          </ReactMarkdown>
+          {message.metadata?.actions && (
+            <div className="flex flex-wrap gap-2">
+              {message.metadata.actions.map((action, index) => (
+                <button
+                  key={index}
+                  className="px-3 py-1 text-sm bg-primary-600 text-white rounded-full hover:bg-primary-700"
+                  onClick={() => handleAction(action.value)}
+                >
+                  {action.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    case 'alert':
+      return (
+        <div
+          className={`p-3 rounded-lg ${
+            message.metadata?.alert?.type === 'warning'
+              ? 'bg-yellow-50 text-yellow-800'
+              : message.metadata?.alert?.type === 'error'
+              ? 'bg-red-50 text-red-800'
+              : message.metadata?.alert?.type === 'success'
+              ? 'bg-green-50 text-green-800'
+              : 'bg-blue-50 text-blue-800'
+          }`}
+        >
+          {message.metadata?.alert?.title && (
+            <h4 className="font-medium mb-1">{message.metadata.alert.title}</h4>
+          )}
+          <ReactMarkdown
+            className="text-sm"
+            remarkPlugins={[remarkGfm]}
+            linkTarget="_blank"
+          >
+            {message.content}
+          </ReactMarkdown>
+          {message.metadata?.actions && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {message.metadata.actions.map((action, index) => (
+                <button
+                  key={index}
+                  className="px-3 py-1 text-sm bg-white text-primary-600 rounded-full hover:bg-primary-50 border border-current"
+                  onClick={() => handleAction(action.value)}
+                >
+                  {action.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    default:
+      return (
+        <ReactMarkdown
+          className="text-sm text-gray-800 prose"
+          remarkPlugins={[remarkGfm]}
+          linkTarget="_blank"
+        >
+          {message.content}
+        </ReactMarkdown>
+      );
+  }
+};
 
   return (
     <div className={`flex flex-col h-full bg-white rounded-lg shadow-sm ${className}`}>
