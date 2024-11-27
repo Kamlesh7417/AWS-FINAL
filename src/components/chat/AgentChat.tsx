@@ -57,7 +57,12 @@ const AgentChat: React.FC<AgentChatProps> = ({
         const response = await axios.post(apiEndpoint, {
           user_input: newMessage,
           language: 'en',
-        });
+        },{
+            timeout: 40000,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
 
         const aiResponse: AgentMessage = {
           id: `${Date.now()}-ai`,
